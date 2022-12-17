@@ -1,8 +1,7 @@
 # Warcraft_II_Map_Picker
 A very simple tool program that helps the user pick Warcraft 2 maps randomly within a provided folder.
 
-This program was concieved on stream within 2 days mostly to add flavour to the Trogallart Twitch stream at:
-[Trogallart twitch](twitch.tv/trogallart)
+This program was concieved on stream within 2 days mostly to add flavour to the [Trogallart's twitch stream](https://twitch.tv/trogallart).
 
 ### The program presents as follow:
 A configuration panel for the first time setup allowing the user to set directories search rules and some constants.
