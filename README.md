@@ -4,7 +4,7 @@ A very simple tool program that helps the user pick Warcraft 2 maps randomly wit
 This program was concieved on stream within 2 days mostly to add flavour to the Trogallart Twitch stream at:
 [Trogallart twitch](twitch.tv/trogallart)
 
-###The program presents as follow:
+### The program presents as follow:
 A configuration panel for the first time setup allowing the user to set directories search rules and some constants.
 
 ![Configuration view](./images/previews/configuration_panel_preview.png)
