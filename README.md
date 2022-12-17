@@ -2,7 +2,7 @@
 A very simple tool program that helps the user pick Warcraft 2 maps randomly within a provided folder.
 
 This program was concieved on stream within 2 days mostly to add flavour to the Trogallart Twitch stream at:
-(Trogallart twitch)[twitch.tv/trogallart]
+[Trogallart twitch](twitch.tv/trogallart)
 
 ###The program presents as follow:
 A configuration panel for the first time setup allowing the user to set directories search rules and some constants.
@@ -22,6 +22,6 @@ When requesting a secret map with hidden informations:
 
 ![Secret map picked view](./images/previews/map_picker_panel_preview_3.png)
 
-*For any question regarding Warcraft II or this program head to the Trog's (Discord)[https://discord.com/invite/ADt3TgFuV7]*
+*For any question regarding Warcraft II or this program head to the Trog's [Discord](https://discord.com/invite/ADt3TgFuV7)*
 
 Have a great day!
