@@ -1,0 +1,539 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://scripts/main.gd" type="Script" id=1]
+[ext_resource path="res://images/loading.png" type="Texture" id=2]
+[ext_resource path="res://images/minimap_background_with_icon.png" type="Texture" id=3]
+
+[node name="Main" type="Node"]
+script = ExtResource( 1 )
+
+[node name="UI" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PanelConfigure" type="Panel" parent="UI"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/PanelConfigure"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 12.0
+margin_top = 12.0
+margin_right = -12.0
+margin_bottom = -12.0
+custom_constants/separation = 12
+
+[node name="ConfigurePanelTitle" type="Label" parent="UI/PanelConfigure/VBoxContainer"]
+margin_right = 456.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+text = "Random Map Picker Configuration"
+align = 1
+
+[node name="MapsDirectorySelectButton" type="Button" parent="UI/PanelConfigure/VBoxContainer"]
+margin_left = 41.0
+margin_top = 36.0
+margin_right = 415.0
+margin_bottom = 56.0
+rect_min_size = Vector2( 374, 0 )
+size_flags_horizontal = 4
+text = "Select Your Maps Directory"
+
+[node name="HSeparator" type="HSeparator" parent="UI/PanelConfigure/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0.501961 )
+margin_top = 68.0
+margin_right = 456.0
+margin_bottom = 72.0
+
+[node name="Label" type="Label" parent="UI/PanelConfigure/VBoxContainer"]
+margin_left = 22.0
+margin_top = 84.0
+margin_right = 434.0
+margin_bottom = 98.0
+rect_min_size = Vector2( 412, 0 )
+size_flags_horizontal = 4
+text = "Selected maps directory :"
+clip_text = true
+
+[node name="CurrentMapsDirectoryLabel" type="Label" parent="UI/PanelConfigure/VBoxContainer"]
+unique_name_in_owner = true
+margin_left = 22.0
+margin_top = 110.0
+margin_right = 434.0
+margin_bottom = 124.0
+rect_min_size = Vector2( 412, 0 )
+size_flags_horizontal = 4
+custom_colors/font_color = Color( 0.501961, 0.501961, 0.501961, 1 )
+align = 1
+clip_text = true
+
+[node name="HSeparator2" type="HSeparator" parent="UI/PanelConfigure/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0.501961 )
+margin_top = 136.0
+margin_right = 456.0
+margin_bottom = 140.0
+
+[node name="GridContainer" type="GridContainer" parent="UI/PanelConfigure/VBoxContainer"]
+margin_left = 41.0
+margin_top = 152.0
+margin_right = 415.0
+margin_bottom = 196.0
+size_flags_horizontal = 4
+size_flags_vertical = 8
+custom_constants/vseparation = 12
+custom_constants/hseparation = 12
+columns = 2
+
+[node name="Label" type="Label" parent="UI/PanelConfigure/VBoxContainer/GridContainer"]
+margin_top = 1.0
+margin_right = 170.0
+margin_bottom = 15.0
+text = "Water / Land threshold"
+align = 2
+
+[node name="WaterLandThresholdSlider" type="HSlider" parent="UI/PanelConfigure/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+margin_left = 182.0
+margin_right = 374.0
+margin_bottom = 16.0
+rect_min_size = Vector2( 192, 0 )
+max_value = 1.0
+step = 0.01
+value = 0.5
+
+[node name="Label3" type="Label" parent="UI/PanelConfigure/VBoxContainer/GridContainer"]
+margin_top = 29.0
+margin_right = 170.0
+margin_bottom = 43.0
+text = "Cramped / Open threshold"
+align = 2
+
+[node name="CrampedOpenThresholdSlider" type="HSlider" parent="UI/PanelConfigure/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+margin_left = 182.0
+margin_top = 28.0
+margin_right = 374.0
+margin_bottom = 44.0
+rect_min_size = Vector2( 192, 0 )
+max_value = 1.0
+step = 0.01
+value = 0.5
+
+[node name="HSeparator3" type="HSeparator" parent="UI/PanelConfigure/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0.501961 )
+margin_top = 208.0
+margin_right = 456.0
+margin_bottom = 212.0
+
+[node name="GridContainer2" type="GridContainer" parent="UI/PanelConfigure/VBoxContainer"]
+margin_left = 41.0
+margin_top = 224.0
+margin_right = 415.0
+margin_bottom = 248.0
+size_flags_horizontal = 4
+custom_constants/vseparation = 12
+custom_constants/hseparation = 12
+columns = 2
+
+[node name="IgnoreDirectoryButton" type="Button" parent="UI/PanelConfigure/VBoxContainer/GridContainer2"]
+margin_right = 170.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 170, 0 )
+text = "Ignore directory"
+
+[node name="DirectoryToIgnoreLineEdit" type="LineEdit" parent="UI/PanelConfigure/VBoxContainer/GridContainer2"]
+unique_name_in_owner = true
+margin_left = 182.0
+margin_right = 374.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 192, 0 )
+placeholder_text = "Directory name to ignore"
+
+[node name="HSeparator4" type="HSeparator" parent="UI/PanelConfigure/VBoxContainer"]
+modulate = Color( 1, 1, 1, 0.501961 )
+margin_top = 260.0
+margin_right = 456.0
+margin_bottom = 264.0
+
+[node name="Label2" type="Label" parent="UI/PanelConfigure/VBoxContainer"]
+margin_left = 22.0
+margin_top = 276.0
+margin_right = 434.0
+margin_bottom = 290.0
+rect_min_size = Vector2( 412, 0 )
+size_flags_horizontal = 4
+text = "Ignored directories :"
+clip_text = true
+
+[node name="IgnoredDirectoriesFlowContainer" type="HFlowContainer" parent="UI/PanelConfigure/VBoxContainer"]
+unique_name_in_owner = true
+margin_left = 18.0
+margin_top = 302.0
+margin_right = 438.0
+margin_bottom = 430.0
+rect_min_size = Vector2( 420, 128 )
+size_flags_horizontal = 4
+size_flags_vertical = 3
+
+[node name="SaveConfigurationButton" type="Button" parent="UI/PanelConfigure/VBoxContainer"]
+unique_name_in_owner = true
+margin_top = 442.0
+margin_right = 456.0
+margin_bottom = 462.0
+text = "Save configuration"
+
+[node name="FileExplorerDialog" type="FileDialog" parent="UI/PanelConfigure"]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -240.0
+margin_top = -240.0
+margin_right = 240.0
+margin_bottom = 240.0
+rect_min_size = Vector2( 480, 480 )
+popup_exclusive = true
+window_title = "Open a Directory"
+mode = 2
+access = 2
+
+[node name="PanelLoading" type="Panel" parent="UI"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/PanelLoading"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 12.0
+margin_top = 12.0
+margin_right = -12.0
+margin_bottom = -12.0
+custom_constants/separation = 18
+alignment = 1
+
+[node name="LoadingPanelTitle" type="Label" parent="UI/PanelLoading/VBoxContainer"]
+unique_name_in_owner = true
+margin_top = 132.0
+margin_right = 456.0
+margin_bottom = 146.0
+text = "Loading Maps..."
+align = 1
+
+[node name="CenterContainer" type="CenterContainer" parent="UI/PanelLoading/VBoxContainer"]
+margin_top = 164.0
+margin_right = 456.0
+margin_bottom = 292.0
+
+[node name="LoadingPanelTextureProgress" type="TextureProgress" parent="UI/PanelLoading/VBoxContainer/CenterContainer"]
+unique_name_in_owner = true
+margin_left = 164.0
+margin_right = 292.0
+margin_bottom = 128.0
+value = 15.0
+texture_under = ExtResource( 2 )
+texture_progress = ExtResource( 2 )
+fill_mode = 4
+tint_under = Color( 0.25098, 0.25098, 0.25098, 1 )
+tint_progress = Color( 0.25098, 1, 0.501961, 1 )
+
+[node name="LoadingStepLabel" type="Label" parent="UI/PanelLoading/VBoxContainer"]
+unique_name_in_owner = true
+margin_top = 310.0
+margin_right = 456.0
+margin_bottom = 324.0
+align = 1
+
+[node name="PanelMapPicker" type="Panel" parent="UI"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="MapPicker" type="VBoxContainer" parent="UI/PanelMapPicker"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 12.0
+margin_top = 12.0
+margin_right = -12.0
+margin_bottom = -12.0
+custom_constants/separation = 12
+
+[node name="MapPickerTitle" type="Label" parent="UI/PanelMapPicker/MapPicker"]
+margin_right = 456.0
+margin_bottom = 14.0
+text = "Random Map Picker"
+align = 1
+
+[node name="GridContainer" type="GridContainer" parent="UI/PanelMapPicker/MapPicker"]
+margin_left = 14.0
+margin_top = 26.0
+margin_right = 441.0
+margin_bottom = 276.0
+size_flags_horizontal = 4
+custom_constants/hseparation = 24
+columns = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer"]
+margin_right = 195.0
+margin_bottom = 250.0
+custom_constants/separation = -10
+
+[node name="SecretMapCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+margin_right = 195.0
+margin_bottom = 40.0
+text = "Secret Map"
+align = 2
+
+[node name="DefaultUnitsCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+margin_top = 30.0
+margin_right = 195.0
+margin_bottom = 70.0
+pressed = true
+text = "Default units"
+align = 2
+
+[node name="DefaultUpgradesCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+margin_top = 60.0
+margin_right = 195.0
+margin_bottom = 100.0
+pressed = true
+text = "Default upgrades"
+align = 2
+
+[node name="AllowRestrictionsCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+margin_top = 90.0
+margin_right = 195.0
+margin_bottom = 130.0
+text = "Allow Restrictions"
+align = 2
+
+[node name="AllowComputerCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+margin_top = 120.0
+margin_right = 195.0
+margin_bottom = 160.0
+text = "Allow Computers"
+align = 2
+
+[node name="AllowRescuesCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+margin_top = 150.0
+margin_right = 195.0
+margin_bottom = 190.0
+text = "Allow Rescues"
+align = 2
+
+[node name="AllowDaemonWatcherCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+margin_top = 180.0
+margin_right = 195.0
+margin_bottom = 220.0
+text = "Watcher Daemon"
+align = 2
+
+[node name="RemovePickedCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+margin_top = 210.0
+margin_right = 195.0
+margin_bottom = 250.0
+pressed = true
+text = "Remove picked "
+align = 2
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer"]
+margin_left = 219.0
+margin_right = 427.0
+margin_bottom = 250.0
+alignment = 2
+
+[node name="MapName" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2"]
+unique_name_in_owner = true
+margin_top = 6.0
+margin_right = 208.0
+margin_bottom = 20.0
+align = 1
+clip_text = true
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2"]
+margin_top = 24.0
+margin_right = 208.0
+margin_bottom = 232.0
+
+[node name="MinimapBackground" type="TextureRect" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2/AspectRatioContainer"]
+margin_right = 208.0
+margin_bottom = 208.0
+rect_min_size = Vector2( 208, 208 )
+texture = ExtResource( 3 )
+expand = true
+
+[node name="Minimap" type="TextureRect" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2/AspectRatioContainer"]
+unique_name_in_owner = true
+margin_right = 208.0
+margin_bottom = 208.0
+rect_min_size = Vector2( 208, 208 )
+size_flags_vertical = 0
+expand = true
+
+[node name="Description" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2"]
+unique_name_in_owner = true
+margin_top = 236.0
+margin_right = 208.0
+margin_bottom = 250.0
+align = 1
+clip_text = true
+
+[node name="HSeparator" type="HSeparator" parent="UI/PanelMapPicker/MapPicker"]
+modulate = Color( 1, 1, 1, 0.501961 )
+margin_top = 288.0
+margin_right = 456.0
+margin_bottom = 292.0
+
+[node name="GridContainer2" type="GridContainer" parent="UI/PanelMapPicker/MapPicker"]
+margin_left = 16.0
+margin_top = 304.0
+margin_right = 440.0
+margin_bottom = 398.0
+size_flags_horizontal = 4
+size_flags_vertical = 3
+custom_constants/vseparation = 12
+custom_constants/hseparation = 24
+columns = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer2"]
+margin_right = 200.0
+margin_bottom = 24.0
+alignment = 2
+
+[node name="Label" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer"]
+margin_left = 44.0
+margin_top = 5.0
+margin_right = 122.0
+margin_bottom = 19.0
+text = "Min players "
+
+[node name="MinPlayersSpinBox" type="SpinBox" parent="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer"]
+unique_name_in_owner = true
+margin_left = 126.0
+margin_right = 200.0
+margin_bottom = 24.0
+min_value = 2.0
+max_value = 8.0
+value = 2.0
+rounded = true
+align = 1
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer2"]
+margin_left = 224.0
+margin_right = 424.0
+margin_bottom = 24.0
+alignment = 2
+
+[node name="Label3" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer3"]
+margin_left = 81.0
+margin_top = 5.0
+margin_right = 167.0
+margin_bottom = 19.0
+text = "Water or land"
+
+[node name="WaterFactorOptionButton" type="OptionButton" parent="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer3"]
+unique_name_in_owner = true
+margin_left = 171.0
+margin_right = 200.0
+margin_bottom = 24.0
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer2"]
+margin_top = 36.0
+margin_right = 200.0
+margin_bottom = 60.0
+alignment = 2
+
+[node name="Label2" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer2"]
+margin_left = 46.0
+margin_top = 5.0
+margin_right = 122.0
+margin_bottom = 19.0
+text = "Max players"
+
+[node name="MaxPlayersSpinBox" type="SpinBox" parent="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer2"]
+unique_name_in_owner = true
+margin_left = 126.0
+margin_right = 200.0
+margin_bottom = 24.0
+min_value = 2.0
+max_value = 8.0
+value = 8.0
+rounded = true
+align = 1
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer2"]
+margin_left = 224.0
+margin_top = 36.0
+margin_right = 424.0
+margin_bottom = 60.0
+alignment = 2
+
+[node name="Label4" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer4"]
+margin_left = 57.0
+margin_top = 5.0
+margin_right = 167.0
+margin_bottom = 19.0
+text = "Cramped or open"
+
+[node name="CrampedFactorOptionButton" type="OptionButton" parent="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer4"]
+unique_name_in_owner = true
+margin_left = 171.0
+margin_right = 200.0
+margin_bottom = 24.0
+
+[node name="ReconfigureButton" type="Button" parent="UI/PanelMapPicker/MapPicker/GridContainer2"]
+margin_top = 72.0
+margin_right = 200.0
+margin_bottom = 92.0
+rect_min_size = Vector2( 200, 0 )
+text = "Reconfigure"
+
+[node name="ClearPickHistoryButton" type="Button" parent="UI/PanelMapPicker/MapPicker/GridContainer2"]
+margin_left = 224.0
+margin_top = 72.0
+margin_right = 424.0
+margin_bottom = 92.0
+rect_min_size = Vector2( 200, 0 )
+text = "Clear pick history"
+
+[node name="PickedMapPathLabel" type="Label" parent="UI/PanelMapPicker/MapPicker"]
+unique_name_in_owner = true
+margin_left = 22.0
+margin_top = 410.0
+margin_right = 434.0
+margin_bottom = 424.0
+rect_min_size = Vector2( 412, 0 )
+size_flags_horizontal = 4
+custom_colors/font_color = Color( 0.501961, 0.501961, 0.501961, 1 )
+align = 1
+clip_text = true
+
+[node name="TextureButton" type="Button" parent="UI/PanelMapPicker/MapPicker"]
+margin_top = 436.0
+margin_right = 456.0
+margin_bottom = 456.0
+text = "Pick Next Map"
+
+[connection signal="pressed" from="UI/PanelConfigure/VBoxContainer/MapsDirectorySelectButton" to="." method="_on_select_maps_directory_button_pressed"]
+[connection signal="drag_ended" from="UI/PanelConfigure/VBoxContainer/GridContainer/WaterLandThresholdSlider" to="." method="_on_water_land_threshold_slider_drag_ended"]
+[connection signal="drag_ended" from="UI/PanelConfigure/VBoxContainer/GridContainer/CrampedOpenThresholdSlider" to="." method="_on_cramped_open_threshold_slider_drag_ended"]
+[connection signal="pressed" from="UI/PanelConfigure/VBoxContainer/GridContainer2/IgnoreDirectoryButton" to="." method="_on_ignore_directory_button_pressed"]
+[connection signal="button_up" from="UI/PanelConfigure/VBoxContainer/SaveConfigurationButton" to="." method="_on_save_configuration_button_up"]
+[connection signal="dir_selected" from="UI/PanelConfigure/FileExplorerDialog" to="." method="_on_file_explorer_maps_dir_selected"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/SecretMapCheckButton" to="." method="_on_secret_map_check_button_toggled"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/DefaultUnitsCheckButton" to="." method="_on_default_units_check_button_toggled"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/DefaultUpgradesCheckButton" to="." method="_on_default_upgrades_check_button_toggled"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/AllowRestrictionsCheckButton" to="." method="_on_allow_restrictions_check_button_toggled"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/AllowComputerCheckButton" to="." method="_on_allow_computer_check_button_toggled"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/AllowRescuesCheckButton" to="." method="_on_allow_rescues_check_button_toggled"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/AllowDaemonWatcherCheckButton" to="." method="_on_allow_daemon_watcher_check_button_toggled"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/RemovePickedCheckButton" to="." method="_on_remove_picked_check_button_toggled"]
+[connection signal="value_changed" from="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer/MinPlayersSpinBox" to="." method="_on_min_players_spin_box_value_changed"]
+[connection signal="item_selected" from="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer3/WaterFactorOptionButton" to="." method="_on_water_factor_option_button_item_selected"]
+[connection signal="value_changed" from="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer2/MaxPlayersSpinBox" to="." method="_on_max_players_spin_box_value_changed"]
+[connection signal="item_selected" from="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer4/CrampedFactorOptionButton" to="." method="_on_cramped_factor_option_button_item_selected"]
+[connection signal="pressed" from="UI/PanelMapPicker/MapPicker/GridContainer2/ReconfigureButton" to="." method="_on_reconfigure_button_pressed"]
+[connection signal="pressed" from="UI/PanelMapPicker/MapPicker/GridContainer2/ClearPickHistoryButton" to="." method="_on_clear_pick_history_button_pressed"]
+[connection signal="button_up" from="UI/PanelMapPicker/MapPicker/TextureButton" to="." method="_on_pick_map_button_pressed"]
