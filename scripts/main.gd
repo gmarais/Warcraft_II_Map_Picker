@@ -15,6 +15,8 @@ extends Node
 
 const SECRET_MAP_FILENAME = "RMP_Secret.pud"
 const SECRET_MAP_DESCRIPTION = "A random mysterious map."
+const LIGHT_TEXT_REGIONS_OFF = Rect2(0,0,16,16)
+const LIGHT_TEXT_REGIONS_ON = Rect2(16,0,16,16)
 
 enum WATER_OR_LAND {
 	BOTH = 0
@@ -44,8 +46,7 @@ var filter_players_max:int = 8
 var filter_water_and_land:int = WATER_OR_LAND.BOTH
 var filter_cramped_and_open:int = CRAMPED_OR_OPEN.BOTH
 var filter_allow_daemon_watcher:bool = false
-var filter_default_upgrades:bool = true
-var filter_default_units:bool = true
+var filter_allow_custom_units:bool = false
 var filter_allow_computers:bool = false
 var filter_allow_rescues:bool = false
 var filter_allow_restrictions:bool = false
@@ -118,22 +119,20 @@ func passes_cramped_or_open_filter(map:PUD) -> bool:
 
 
 func passes_players_number_filter(map:PUD) -> bool:
-	if filter_allow_computers == true and map.computer_players > 0:
+	if filter_allow_computers == false and map.computer_players > 0:
 		return false
-	if filter_allow_rescues == true and map.rescue_players > 0:
+	if filter_allow_rescues == false and map.rescue_players > 0:
 		return false
 	var total_players = map.human_players + map.computer_players
 	return total_players >= self.filter_players_min and total_players <= self.filter_players_max
 
 
 func passes_custom_filter(map:PUD) -> bool:
-	if map.has_alow_section and !self.filter_allow_restrictions:
+	if !self.filter_allow_custom_units and not (map.uses_default_unit_data and map.uses_default_upgrade_data):
 		return false
-	if !map.uses_default_unit_data and self.filter_default_units:
+	if !self.filter_allow_restrictions and map.has_alow_section:
 		return false
-	if !map.uses_default_upgrade_data and self.filter_default_upgrades:
-		return false
-	if map.red_player_is_daemon and !self.filter_allow_daemon_watcher:
+	if !self.filter_allow_daemon_watcher and map.red_player_is_daemon:
 		return false
 	return true
 
@@ -150,6 +149,7 @@ func apply_filters():
 		if self.passes_water_or_land_filter(m) \
 		and self.passes_cramped_or_open_filter(m)\
 		and self.passes_players_number_filter(m) \
+		and self.passes_maps_history_filter(m) \
 		and self.passes_custom_filter(m):
 			filtered_maps_pool.append(m)
 
@@ -261,17 +261,50 @@ func add_ignored_directory_checkbox(ignored_directory):
 	$"%IgnoredDirectoriesFlowContainer".add_child(new_checkbox)
 
 
+func reset_map_display():
+	$"%Minimap".texture = null
+	$"%MapName".text = ""
+	$"%Description".text = ""
+	$"%PickedMapPathLabel".text = "No maps left, try different filters."
+	$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+	$"%ComputersLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+	$"%RescuesLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+	$"%RestrictionsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+	$"%CustomUnitsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+	$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+
+
+func turn_on_lights_for_pud(picked_map:PUD):
+	if !picked_map.uses_default_unit_data or !picked_map.uses_default_upgrade_data:
+		$"%CustomUnitsLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	if picked_map.red_player_is_daemon:
+		$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	if picked_map.has_alow_section:
+		$"%RestrictionsLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	if picked_map.computer_players > 0:
+		$"%ComputersLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	if picked_map.rescue_players > 0:
+		$"%RescuesLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+
+func tween_animate_minimap():
+	$"%Minimap".rect_scale = Vector2(0.6, 0.6)
+	var tween := create_tween()
+# warning-ignore:return_value_discarded
+	tween.tween_property($"%Minimap", "rect_scale", Vector2(1.025, 1.025), 0.05)
+# warning-ignore:return_value_discarded
+	tween.tween_property($"%Minimap", "rect_scale", Vector2(1.0, 1.0), 0.1)
+
 func _on_pick_map_button_pressed():
-	if filtered_maps_pool.size() == 0:
-		$"%Minimap".texture = null
-		$"%MapName".text = ""
-		$"%Description".text = ""
-		$"%PickedMapPathLabel".text = "No maps left, try different filters."
+	reset_map_display()
+	tween_animate_minimap()
+	if filtered_maps_pool.empty():
 		return
 	var random_map:PUD = filtered_maps_pool[int(randf() * (filtered_maps_pool.size() - 1))]
 	if self.filter_remove_picked_from_pool:
-		self.picked_maps_history.append(random_map)
+		if !self.picked_maps_history.has(random_map):
+			self.picked_maps_history.append(random_map)
 		self.filtered_maps_pool.remove(self.filtered_maps_pool.find(random_map))
+	turn_on_lights_for_pud(random_map)
 	if self.filter_secret_map == false:
 		$"%Minimap".texture = random_map.create_minimap()
 		$"%MapName".text = random_map.pud_filename
@@ -342,13 +375,8 @@ func _on_reconfigure_button_pressed():
 	self.open_configuration_panel()
 
 
-func _on_default_units_check_button_toggled(button_pressed):
-	self.filter_default_units = button_pressed
-	apply_filters()
-
-
-func _on_default_upgrades_check_button_toggled(button_pressed):
-	self.filter_default_upgrades = button_pressed
+func _on_custom_units_check_button_toggled(button_pressed):
+	self.filter_allow_custom_units = button_pressed
 	apply_filters()
 
 

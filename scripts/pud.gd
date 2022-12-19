@@ -92,7 +92,7 @@ var map_size:int = 128
 var uses_default_unit_data:bool = true
 var uses_default_upgrade_data:bool = true
 var has_alow_section:bool = false
-var red_player_is_daemon:bool
+var red_player_is_daemon:bool = false
 var water_factor:float
 var cramped_factor:float
 var water_tiles_count:int
@@ -101,6 +101,8 @@ var era:int = 0
 var terrain_tiles_map:Array = Array()
 var starting_position_colors:Dictionary = Dictionary()
 var gold_mines:PoolVector2Array = PoolVector2Array()
+var oil_patches:PoolVector2Array = PoolVector2Array()
+var critters:PoolVector2Array = PoolVector2Array()
 
 
 func store_description(new_description:String) -> bool:
@@ -129,23 +131,37 @@ func store_description(new_description:String) -> bool:
 
 func create_minimap():
 	var image:Image = Image.new()
+# warning-ignore:integer_division
+	var player_start_size = self.map_size / 32
+	var player_start_offset = player_start_size / 2
 	image.create(map_size, map_size, false, Image.FORMAT_RGB8)
+	image.fill(Color.green)
 	image.lock()
 	for x in range(self.map_size):
 		for y in range(self.map_size):
 			var index = x + y * self.map_size
 			var position = Vector2(x, y)
-			if self.gold_mines.has(position):
+			if self.critters.has(position):
+				image.set_pixel(x, y, Color.gray)
+			elif self.gold_mines.has(position):
 				image.unlock()
 				image.fill_rect(Rect2(x, y, 3, 3), Color.gold)
 				image.lock()
+			elif self.oil_patches.has(position):
+				image.unlock()
+				image.fill_rect(Rect2(x, y, 2, 2), Color.black)
+				image.lock()
 			elif self.starting_position_colors.keys().has(position):
-				image.set_pixel(x, y, self.starting_position_colors[position])
-			elif image.get_pixel(x, y) != Color.gold:
+				image.unlock()
+				image.fill_rect(Rect2(x - player_start_offset, y - player_start_offset, player_start_size,  player_start_size), self.starting_position_colors[position])
+				image.lock()
+			elif image.get_pixel(x, y) == Color.green:
 				image.set_pixel(x, y, self.terrain_tiles_map[index][self.era])
 	image.unlock()
+	if self.map_size > 32:
+		image.resize(208, 208, Image.INTERPOLATE_TRILINEAR)
 	var image_texture = ImageTexture.new()
-	image_texture.create_from_image(image, ImageTexture.STORAGE_COMPRESS_LOSSLESS)
+	image_texture.create_from_image(image, ImageTexture.STORAGE_RAW)
 	return image_texture
 
 
@@ -189,7 +205,7 @@ func load_pud() -> bool:
 		section_info = get_next_section_info(file)
 	file.close()
 	self.water_factor = float(self.water_tiles_count) / float(self.terrain_tiles_map.size())
-	self.cramped_factor = float(self.blocking_tiles_count + self.gold_mines.size() * 9) / float(self.terrain_tiles_map.size())
+	self.cramped_factor = float(self.blocking_tiles_count + self.critters.size() + self.gold_mines.size() * 9) / float(self.terrain_tiles_map.size())
 	return true
 
 
@@ -209,27 +225,24 @@ func is_wc2_type(file:File) -> bool:
 	var byte_buffer:PoolByteArray = file.get_buffer(8)
 	var pud_type_string = byte_buffer.get_string_from_ascii()
 	if pud_type_string == "WAR2 MAP":
-#		print("PUD is a war2 map!")
 		return true
 	return false
 
 
 func parse_dimentions(file:File):
 	self.map_size = file.get_8()
-#	print("Map size = ", self.map_size)
 
 
 func parse_description(file:File):
 	var byte_buffer:PoolByteArray = file.get_buffer(32)
 	self.description = byte_buffer.get_string_from_ascii()
-#	print("Map description: " + self.description)
 
 
 func parse_units(file:File, section_info:SectionInfo):
 # warning-ignore:integer_division
 	var number_of_units_placed = section_info.length / 8
-	self.red_player_is_daemon = true
 	var daemon_counter = 0
+	var has_non_daemon_units = false
 	for u in range(number_of_units_placed):
 		file.seek(section_info.begin_position + 8 * u)
 		var unit_position = Vector2(file.get_16(), file.get_16())
@@ -237,16 +250,19 @@ func parse_units(file:File, section_info:SectionInfo):
 		var owning_player = file.get_8()
 		if unit_type == 0x5c:
 			self.gold_mines.append(unit_position)
+		elif unit_type == 0x5d:
+			self.oil_patches.append(unit_position)
+		elif unit_type == 0x39:
+			self.critters.append(unit_position)
 		elif unit_type == 0x5e or unit_type == 0x5f:
 			if owning_player < 8:
 				self.starting_position_colors[unit_position] = PLAYER_COLOR[owning_player]
 		elif unit_type == 0x38 and owning_player == 0:
 			daemon_counter += 1
-		elif owning_player == 0:
-			self.red_player_is_daemon = false
-	if daemon_counter != 1:
-		self.red_player_is_daemon = false
-#	print("Red player is a daemon watcher: ", self.red_player_is_daemon)
+		elif !has_non_daemon_units and owning_player == 0:
+			has_non_daemon_units = true
+	if daemon_counter == 1 and !has_non_daemon_units:
+		self.red_player_is_daemon = true
 
 
 func parse_ownerships(file:File):
@@ -258,21 +274,16 @@ func parse_ownerships(file:File):
 			self.rescue_players += 1
 		elif ownership_value == PUD_OWNERSHIP.COMPUTER:
 			self.computer_players += 1
-#	print("number of human players: ", self.human_players)
-#	print("number of rescue players: ", self.rescue_players)
-#	print("number of computer players: ", self.computer_players)
 
 
 func parse_units_data(file:File):
 	var is_using_default = file.get_8()
 	self.uses_default_unit_data = is_using_default != 0
-#	print("PUD is using default units data: ", self.uses_default_unit_data)
 
 
 func parse_upgrades_data(file:File):
 	var is_using_default = file.get_8()
 	self.uses_default_upgrade_data = is_using_default != 0
-#	print("PUD is using default upgrades data: " , self.uses_default_unit_data)
 
 
 func parse_era(file):
@@ -286,7 +297,6 @@ func parse_tiles_map(file:File, section_info:SectionInfo):
 	self.water_tiles_count = 0
 # warning-ignore:integer_division
 	var tiles_number = section_info.length / 2
-#	print("Number of tiles: ", tiles_number)
 	self.terrain_tiles_map.clear()
 	for _t in range(tiles_number):
 		var tile_type:int = file.get_8()
@@ -334,6 +344,4 @@ func parse_tiles_map(file:File, section_info:SectionInfo):
 		elif transition == 0x01:
 			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.WATER)
 			self.water_tiles_count += 1
-#	print("Water tiles count: ", self.water_tiles_count)
-#	print("Blocking tiles count: ", self.blocking_tiles_count)
 
