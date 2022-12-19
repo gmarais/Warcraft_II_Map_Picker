@@ -13,7 +13,6 @@ class_name Main
 extends Node
 
 
-const SECRET_MAP_FILENAME = "RMP_Secret.pud"
 const SECRET_MAP_DESCRIPTION = "A random mysterious map."
 const LIGHT_TEXT_REGIONS_OFF = Rect2(0,0,16,16)
 const LIGHT_TEXT_REGIONS_ON = Rect2(16,0,16,16)
@@ -176,6 +175,7 @@ func open_configuration_panel():
 	$"%WaterLandThresholdSlider".value = self.configuration.water_land_treshold
 	$"%CrampedOpenThresholdSlider".value = self.configuration.cramped_open_treshold
 	$"%CurrentMapsDirectoryLabel".text = self.configuration.root_maps_directory_path
+	$"%CurrentSecretFilePathLabel".text = self.configuration.secret_file_path
 	$"%FileExplorerDialog".current_dir = self.configuration.root_maps_directory_path
 	for c in $"%IgnoredDirectoriesFlowContainer".get_children():
 		c.queue_free()
@@ -312,11 +312,13 @@ func _on_pick_map_button_pressed():
 		$"%PickedMapPathLabel".text = random_map.pud_file_path.substr(self.maps_dir.get_current_dir().length())
 	else:
 		$"%Minimap".texture = load("res://images/secret_minimap_background.png")
-		$"%MapName".text = SECRET_MAP_FILENAME
+		$"%MapName".text = self.configuration.secret_file_path.get_file()
 		$"%Description".text = SECRET_MAP_DESCRIPTION
+		if self.configuration.secret_file_path == self.configuration.SECRET_MAP_DEFAULT_FILENAME:
+			return
 		var secret_pud = PUD.new()
-		secret_pud.pud_filename = SECRET_MAP_FILENAME
-		secret_pud.pud_file_path = self.maps_dir.get_current_dir() + "/" + SECRET_MAP_FILENAME
+		secret_pud.pud_filename = self.configuration.secret_file_path.get_file()
+		secret_pud.pud_file_path = self.configuration.secret_file_path
 		var err = self.maps_dir.copy(random_map.pud_file_path, secret_pud.pud_file_path)
 		if err != OK:
 			printerr("Error while copying secret map file.")
@@ -330,8 +332,26 @@ func _on_save_configuration_button_up():
 	self.save_configuration()
 
 
+func _on_select_secret_file_path_button_pressed():
+	$"%FileExplorerDialog".mode = FileDialog.MODE_SAVE_FILE
+	$"%FileExplorerDialog".filters = ["*.pud"]
+	if !$"%FileExplorerDialog".is_connected("file_selected", self, "_on_file_explorer_secret_file_selected"):
+# warning-ignore:return_value_discarded
+		$"%FileExplorerDialog".connect("file_selected", self, "_on_file_explorer_secret_file_selected", [], CONNECT_ONESHOT)
+	$"%FileExplorerDialog".show()
+
+
+func _on_file_explorer_secret_file_selected(filepath):
+	self.configuration.secret_file_path = filepath
+	$"%CurrentSecretFilePathLabel".text = filepath
+
+
 func _on_select_maps_directory_button_pressed():
-	$UI/PanelConfigure/FileExplorerDialog.show()
+	$"%FileExplorerDialog".mode = FileDialog.MODE_OPEN_DIR
+	if !$"%FileExplorerDialog".is_connected("dir_selected", self, "_on_file_explorer_maps_dir_selected"):
+# warning-ignore:return_value_discarded
+		$"%FileExplorerDialog".connect("dir_selected", self, "_on_file_explorer_maps_dir_selected", [], CONNECT_ONESHOT)
+	$"%FileExplorerDialog".show()
 
 
 func _on_file_explorer_maps_dir_selected(dir):
@@ -350,8 +370,7 @@ func _on_cramped_open_threshold_slider_drag_ended(value_changed):
 		self.configuration.cramped_open_treshold = $"%CrampedOpenThresholdSlider".value
 
 
-func _on_ignore_directory_button_pressed():
-	var directory_to_ignore:String = $"%DirectoryToIgnoreLineEdit".text
+func _on_ignore_directory_entered(directory_to_ignore):
 	$"%DirectoryToIgnoreLineEdit".text = ""
 	if directory_to_ignore == "" or self.configuration.ignored_directory_names.has(directory_to_ignore):
 		printerr("Empty directory name or directory is already ignored.")
@@ -360,6 +379,11 @@ func _on_ignore_directory_button_pressed():
 	poolstringarray_tmp.append(directory_to_ignore)
 	self.configuration.ignored_directory_names = poolstringarray_tmp
 	add_ignored_directory_checkbox(directory_to_ignore)
+
+
+func _on_ignore_directory_button_pressed():
+	var directory_to_ignore:String = $"%DirectoryToIgnoreLineEdit".text
+	_on_ignore_directory_entered(directory_to_ignore)
 
 
 func _on_ignored_directory_checkbox_pressed(pressed_checkbox:CheckBox):
