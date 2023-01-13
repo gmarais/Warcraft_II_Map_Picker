@@ -294,6 +294,14 @@ func tween_animate_minimap():
 # warning-ignore:return_value_discarded
 	tween.tween_property($"%Minimap", "rect_scale", Vector2(1.0, 1.0), 0.1)
 
+
+func trim_maps_dir_from_path(path:String) -> String:
+	var maps_dir_path = self.maps_dir.get_current_dir()
+	if path.begins_with(maps_dir_path):
+		return path.substr(maps_dir_path.length())
+	else:
+		return path
+
 func _on_pick_map_button_pressed():
 	reset_map_display()
 	tween_animate_minimap()
@@ -309,7 +317,7 @@ func _on_pick_map_button_pressed():
 		$"%Minimap".texture = random_map.create_minimap()
 		$"%MapName".text = random_map.pud_filename
 		$"%Description".text = random_map.description
-		$"%PickedMapPathLabel".text = random_map.pud_file_path.substr(self.maps_dir.get_current_dir().length())
+		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(random_map.pud_file_path)
 	else:
 		$"%Minimap".texture = load("res://images/secret_minimap_background.png")
 		$"%MapName".text = self.configuration.secret_file_path.get_file()
@@ -325,7 +333,7 @@ func _on_pick_map_button_pressed():
 			return
 		if secret_pud.store_description(SECRET_MAP_DESCRIPTION) == false:
 			printerr("Error when trying to store description.")
-		$"%PickedMapPathLabel".text = secret_pud.pud_file_path.substr(self.maps_dir.get_current_dir().length())
+		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(secret_pud.pud_file_path)
 
 
 func _on_save_configuration_button_up():
