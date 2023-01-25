@@ -32,11 +32,11 @@ const TERRAIN_TYPE_COLOR = {
 	DARK_COAST = [Color("603800"), Color("2c5c94"), Color("341404"), Color("542800")],
 	GROUND = [Color("28540c"), Color("9494a0"), Color("804004"), Color("503828")],
 	DARK_GROUND = [Color("244804"), Color("848498"), Color("703004"), Color("382418")],
-	FOREST = [Color("002c00"), Color("003c28"), Color("081800"), Color("7c5840")],
-	MOUNTAIN = [Color("3c3c3c"), Color("7c5448"), Color("382828"), Color("544444")],
-	WALLS = [Color("505050"), Color("58607c"), Color("403430"), Color("786c68")],
-	TRANSITION_FOREST = [Color("143400"), Color("144848"), Color("1c2400"), Color("6c4830")],
-	TRANSITION_MOUNTAIN = [Color("505050"), Color("74483c"), Color("2c2020"), Color("483c38")],
+	FOREST = [Color("143400"), Color("144848"), Color("1c2400"), Color("7c5840")],
+	MOUNTAIN = [Color("505050"), Color("7c5448"), Color("382828"), Color("544444")],
+	WALLS = [Color("646464"), Color("58607c"), Color("403430"), Color("786c68")],
+	TRANSITION_FOREST = [Color("002c00"), Color("003c28"), Color("081800"), Color("6c4830")],
+	TRANSITION_MOUNTAIN = [Color("3c3c3c"), Color("74483c"), Color("2c2020"), Color("483c38")],
 	TRANSITION_COAST_WATER = [Color("246c94"), Color("185488"), Color("143844"), Color("344810")],
 }
 
