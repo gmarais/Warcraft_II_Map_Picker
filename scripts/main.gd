@@ -40,6 +40,7 @@ class StructMapInfos:
 
 
 var configuration = RMP_Config.new()
+var maps_ratings = MapsRatings.new()
 var filter_players_min:int = 2
 var filter_players_max:int = 8
 var filter_water_and_land:int = WATER_OR_LAND.BOTH
@@ -49,6 +50,7 @@ var filter_allow_custom_units:bool = false
 var filter_allow_computers:bool = false
 var filter_allow_rescues:bool = false
 var filter_allow_restrictions:bool = false
+var filter_min_rating = 0
 var filter_remove_picked_from_pool:bool = true
 var filter_secret_map:bool = false
 var maps_dir:Directory = Directory.new()
@@ -67,6 +69,7 @@ func _ready():
 	self.loading_thread = Thread.new()
 	set_physics_process(false)
 	initialize_option_buttons()
+	self.maps_ratings.load_maps_ratings()
 	self.load_configuration()
 
 
@@ -142,6 +145,12 @@ func passes_maps_history_filter(map:PUD) -> bool:
 	return true
 
 
+func passes_maps_rating_filter(map:PUD) -> bool:
+	if self.maps_ratings.get_map_rating(map.pud_filename) < self.filter_min_rating:
+		return false
+	return true
+
+
 func apply_filters():
 	filtered_maps_pool.clear()
 	for m in unsorted_maps:
@@ -149,7 +158,8 @@ func apply_filters():
 		and self.passes_cramped_or_open_filter(m)\
 		and self.passes_players_number_filter(m) \
 		and self.passes_maps_history_filter(m) \
-		and self.passes_custom_filter(m):
+		and self.passes_custom_filter(m) \
+		and self.passes_maps_rating_filter(m):
 			filtered_maps_pool.append(m)
 
 
@@ -286,6 +296,7 @@ func turn_on_lights_for_pud(picked_map:PUD):
 	if picked_map.rescue_players > 0:
 		$"%RescuesLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
 
+
 func tween_animate_minimap():
 	$"%Minimap".rect_scale = Vector2(0.6, 0.6)
 	var tween := create_tween()
@@ -302,10 +313,12 @@ func trim_maps_dir_from_path(path:String) -> String:
 	else:
 		return path
 
+
 func _on_pick_map_button_pressed():
 	reset_map_display()
 	tween_animate_minimap()
 	if filtered_maps_pool.empty():
+		$"%MapStarsTextureProgress".hide()
 		return
 	var random_map:PUD = filtered_maps_pool[int(randf() * (filtered_maps_pool.size() - 1))]
 	if self.filter_remove_picked_from_pool:
@@ -316,9 +329,12 @@ func _on_pick_map_button_pressed():
 	if self.filter_secret_map == false:
 		$"%Minimap".texture = random_map.create_minimap()
 		$"%MapName".text = random_map.pud_filename
+		$"%MapStarsTextureProgress".show()
+		$"%MapStarsTextureProgress".value = self.maps_ratings.get_map_rating(random_map.pud_filename)
 		$"%Description".text = random_map.description
 		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(random_map.pud_file_path)
 	else:
+		$"%MapStarsTextureProgress".hide()
 		$"%Minimap".texture = load("res://images/secret_minimap_background.png")
 		$"%MapName".text = self.configuration.secret_file_path.get_file()
 		$"%Description".text = SECRET_MAP_DESCRIPTION
@@ -466,5 +482,14 @@ func _on_cramped_factor_option_button_item_selected(index):
 	apply_filters()
 
 
+func _on_min_stars_pressed(value):
+	self.filter_min_rating = value
+	apply_filters()
+
+
 func _on_secret_map_check_button_toggled(button_pressed):
 	self.filter_secret_map = button_pressed
+
+
+func _on_map_stars_pressed(value):
+	self.maps_ratings.set_map_rating($"%MapName".text, value)

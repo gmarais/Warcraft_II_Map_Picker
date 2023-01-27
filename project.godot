@@ -9,10 +9,20 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "TextureProgress",
+"class": "InterractibleHProgress",
+"language": "GDScript",
+"path": "res://scripts/interractible_texture_progress.gd"
+}, {
 "base": "Node",
 "class": "Main",
 "language": "GDScript",
 "path": "res://scripts/main.gd"
+}, {
+"base": "Node",
+"class": "MapsRatings",
+"language": "GDScript",
+"path": "res://scripts/maps_ratings.gd"
 }, {
 "base": "Node",
 "class": "PUD",
@@ -25,7 +35,9 @@ _global_script_classes=[ {
 "path": "res://scripts/random_map_picker_configuration.gd"
 } ]
 _global_script_class_icons={
+"InterractibleHProgress": "",
 "Main": "",
+"MapsRatings": "",
 "PUD": "",
 "RMP_Config": ""
 }

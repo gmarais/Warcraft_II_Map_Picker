@@ -28,9 +28,9 @@ const PLAYER_COLOR = [
 const TERRAIN_TYPE_COLOR = {
 	WATER = [Color("0c4c80"), Color("043874"), Color("0c2430"), Color("28300c")],
 	DARK_WATER = [Color("043470"), Color("002c64"), Color("10202c"), Color("141c08")],
-	COAST = [Color("744404"), Color("4470a4"), Color("4c280c"), Color("683c08")],
+	COAST = [Color("744404"), Color("4470a4"), Color("4c280c"), Color("603404")],
 	DARK_COAST = [Color("603800"), Color("2c5c94"), Color("341404"), Color("542800")],
-	GROUND = [Color("28540c"), Color("9494a0"), Color("804004"), Color("503828")],
+	GROUND = [Color("28540c"), Color("9494a0"), Color("804004"), Color("442c1c")],
 	DARK_GROUND = [Color("244804"), Color("848498"), Color("703004"), Color("382418")],
 	FOREST = [Color("143400"), Color("144848"), Color("1c2400"), Color("7c5840")],
 	MOUNTAIN = [Color("505050"), Color("7c5448"), Color("382828"), Color("544444")],
@@ -338,7 +338,7 @@ func parse_tiles_map(file:File, section_info:SectionInfo):
 			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.TRANSITION_FOREST)
 			self.blocking_tiles_count += 1
 		elif transition == 0x06:
-			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.GROUND)
+			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.DARK_GROUND)
 		elif transition == 0x05 or transition == 0x03:
 			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.COAST)
 		elif transition == 0x02:
@@ -348,6 +348,6 @@ func parse_tiles_map(file:File, section_info:SectionInfo):
 			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.TRANSITION_MOUNTAIN)
 			self.blocking_tiles_count += 1
 		elif transition == 0x01:
-			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.WATER)
+			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.DARK_WATER)
 			self.water_tiles_count += 1
 
