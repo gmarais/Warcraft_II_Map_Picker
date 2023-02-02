@@ -293,7 +293,6 @@ margin_bottom = 324.0
 align = 1
 
 [node name="PanelMapPicker" type="Panel" parent="UI"]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 
@@ -469,7 +468,6 @@ rounded = true
 texture_under = ExtResource( 5 )
 texture_progress = ExtResource( 5 )
 tint_under = Color( 0.313726, 0.313726, 0.313726, 1 )
-tint_progress = Color( 1, 0.784314, 0, 1 )
 script = ExtResource( 7 )
 
 [node name="RemovePickedCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]

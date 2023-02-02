@@ -13,13 +13,17 @@ class_name MapsRatings
 extends Node
 
 const RATINGS_FILE_PATH = "res://ratings.json"
-
+const DEFAULT_RATING = 2
 
 var _maps_ratings:Dictionary = {}
 
 
 func set_map_rating(map_name:String, rating:int):
-	self._maps_ratings[map_name] = rating
+	if rating == DEFAULT_RATING:
+# warning-ignore:return_value_discarded
+		self._maps_ratings.erase(map_name)
+	else:
+		self._maps_ratings[map_name] = rating
 	self.save_maps_ratings()
 
 
@@ -27,7 +31,7 @@ func get_map_rating(map_name:String) -> int:
 	if self._maps_ratings.has(map_name):
 		return int(self._maps_ratings[map_name])
 	else:
-		return 2
+		return DEFAULT_RATING
 
 
 func load_maps_ratings():
@@ -45,7 +49,7 @@ func save_maps_ratings():
 		var dir = Directory.new()
 		dir.remove(RATINGS_FILE_PATH)
 	if file.open(RATINGS_FILE_PATH, File.WRITE) == OK:
-		var ratings_json_string = JSON.print(self._maps_ratings, "")
+		var ratings_json_string = JSON.print(self._maps_ratings, "\t", true)
 		file.store_string(ratings_json_string)
 	else:
 		printerr("Failed to create or open maps ratings file.")

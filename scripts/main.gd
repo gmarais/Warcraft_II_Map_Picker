@@ -255,7 +255,7 @@ func scan_directory(dir:Directory):
 				scan_directory(sub_dir)
 			else:
 				printerr("Unable to open: " + dir.get_current_dir() + "/" + entry)
-		elif entry.ends_with(".pud") and unsorted_maps_contains(entry) == false:
+		elif entry.ends_with(".pud") and unsorted_maps_contains(entry) == false and (dir.get_current_dir() + "/" + entry) != self.configuration.secret_file_path:
 			var new_pud = PUD.new()
 			new_pud.pud_filename = entry
 			new_pud.pud_file_path = dir.get_current_dir() + "/" + entry
@@ -335,11 +335,12 @@ func _on_pick_map_button_pressed():
 		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(random_map.pud_file_path)
 	else:
 		$"%MapStarsTextureProgress".hide()
-		$"%Minimap".texture = load("res://images/secret_minimap_background.png")
 		$"%MapName".text = self.configuration.secret_file_path.get_file()
-		$"%Description".text = SECRET_MAP_DESCRIPTION
 		if self.configuration.secret_file_path == self.configuration.SECRET_MAP_DEFAULT_FILENAME:
+			printerr("Error secret file path not configured.")
 			return
+		$"%Minimap".texture = load("res://images/secret_minimap_background.png")
+		$"%Description".text = SECRET_MAP_DESCRIPTION
 		var secret_pud = PUD.new()
 		secret_pud.pud_filename = self.configuration.secret_file_path.get_file()
 		secret_pud.pud_file_path = self.configuration.secret_file_path
