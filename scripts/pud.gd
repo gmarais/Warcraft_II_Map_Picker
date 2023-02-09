@@ -161,8 +161,6 @@ func create_minimap():
 			elif image.get_pixel(x, y) == Color.green:
 				image.set_pixel(x, y, self.terrain_tiles_map[index][self.era])
 	image.unlock()
-	if self.map_size > 32:
-		image.resize(208, 208, Image.INTERPOLATE_TRILINEAR)
 	var image_texture = ImageTexture.new()
 	image_texture.create_from_image(image, ImageTexture.STORAGE_RAW)
 	return image_texture

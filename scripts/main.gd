@@ -61,6 +61,7 @@ var loading_pud_done:int
 var loading_pud_filename:String = ""
 var loading_mutex:Mutex
 var loading_thread:Thread
+var currently_picked_map:PUD = null
 
 
 func _ready():
@@ -140,7 +141,7 @@ func passes_custom_filter(map:PUD) -> bool:
 
 
 func passes_maps_history_filter(map:PUD) -> bool:
-	if self.filter_remove_picked_from_pool and self.picked_maps_history.has(map):
+	if self.picked_maps_history.has(map):
 		return false
 	return true
 
@@ -317,14 +318,17 @@ func trim_maps_dir_from_path(path:String) -> String:
 func _on_pick_map_button_pressed():
 	reset_map_display()
 	tween_animate_minimap()
+	if self.currently_picked_map and self.filter_remove_picked_from_pool:
+		if !self.picked_maps_history.has(self.currently_picked_map):
+			self.picked_maps_history.append(self.currently_picked_map)
+		if self.filtered_maps_pool.has(self.currently_picked_map):
+			self.filtered_maps_pool.remove(self.filtered_maps_pool.find(self.currently_picked_map))
 	if filtered_maps_pool.empty():
 		$"%MapStarsTextureProgress".hide()
+		self.currently_picked_map = null
 		return
-	var random_map:PUD = filtered_maps_pool[int(randf() * (filtered_maps_pool.size() - 1))]
-	if self.filter_remove_picked_from_pool:
-		if !self.picked_maps_history.has(random_map):
-			self.picked_maps_history.append(random_map)
-		self.filtered_maps_pool.remove(self.filtered_maps_pool.find(random_map))
+	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
+	self.currently_picked_map = random_map
 	turn_on_lights_for_pud(random_map)
 	if self.filter_secret_map == false:
 		$"%Minimap".texture = random_map.create_minimap()

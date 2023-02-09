@@ -1,10 +1,11 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://scripts/main.gd" type="Script" id=1]
 [ext_resource path="res://images/loading.png" type="Texture" id=2]
 [ext_resource path="res://images/minimap_background_with_icon.png" type="Texture" id=3]
 [ext_resource path="res://images/ui_leds.png" type="Texture" id=4]
 [ext_resource path="res://images/stars.png" type="Texture" id=5]
+[ext_resource path="res://scripts/minimap.gd" type="Script" id=6]
 [ext_resource path="res://scripts/interractible_texture_progress.gd" type="Script" id=7]
 
 [sub_resource type="AtlasTexture" id=1]
@@ -303,7 +304,7 @@ margin_left = 12.0
 margin_top = 12.0
 margin_right = -12.0
 margin_bottom = -12.0
-custom_constants/separation = 10
+custom_constants/separation = 9
 
 [node name="MapPickerTitle" type="Label" parent="UI/PanelMapPicker/MapPicker"]
 margin_right = 456.0
@@ -313,17 +314,17 @@ align = 1
 
 [node name="GridContainer" type="GridContainer" parent="UI/PanelMapPicker/MapPicker"]
 margin_left = 6.0
-margin_top = 24.0
+margin_top = 23.0
 margin_right = 449.0
-margin_bottom = 280.0
+margin_bottom = 289.0
 size_flags_horizontal = 4
 custom_constants/hseparation = 24
 columns = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer"]
 margin_right = 211.0
-margin_bottom = 256.0
-custom_constants/separation = -12
+margin_bottom = 266.0
+custom_constants/separation = -11
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
 margin_right = 211.0
@@ -347,9 +348,9 @@ texture = SubResource( 1 )
 stretch_mode = 6
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
-margin_top = 28.0
+margin_top = 29.0
 margin_right = 211.0
-margin_bottom = 68.0
+margin_bottom = 69.0
 alignment = 2
 
 [node name="AllowComputersCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer2"]
@@ -369,9 +370,9 @@ texture = SubResource( 2 )
 stretch_mode = 6
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
-margin_top = 56.0
+margin_top = 58.0
 margin_right = 211.0
-margin_bottom = 96.0
+margin_bottom = 98.0
 alignment = 2
 
 [node name="AllowRescuesCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer3"]
@@ -391,9 +392,9 @@ texture = SubResource( 3 )
 stretch_mode = 6
 
 [node name="HBoxContainer4" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
-margin_top = 84.0
+margin_top = 87.0
 margin_right = 211.0
-margin_bottom = 124.0
+margin_bottom = 127.0
 alignment = 2
 
 [node name="CustomUnitsCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer4"]
@@ -413,9 +414,9 @@ texture = SubResource( 4 )
 stretch_mode = 6
 
 [node name="HBoxContainer5" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
-margin_top = 112.0
+margin_top = 116.0
 margin_right = 211.0
-margin_bottom = 152.0
+margin_bottom = 156.0
 alignment = 2
 
 [node name="AllowDaemonWatcherCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer5"]
@@ -435,15 +436,15 @@ stretch_mode = 6
 
 [node name="HSeparator" type="HSeparator" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
 modulate = Color( 1, 1, 1, 0.501961 )
-margin_top = 140.0
+margin_top = 145.0
 margin_right = 211.0
-margin_bottom = 172.0
+margin_bottom = 177.0
 custom_constants/separation = 32
 
 [node name="HBoxContainer6" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
-margin_top = 160.0
+margin_top = 166.0
 margin_right = 211.0
-margin_bottom = 200.0
+margin_bottom = 206.0
 alignment = 2
 
 [node name="MinStarsLabel" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6"]
@@ -471,60 +472,51 @@ tint_under = Color( 0.313726, 0.313726, 0.313726, 1 )
 script = ExtResource( 7 )
 
 [node name="RemovePickedCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
-margin_top = 188.0
+margin_top = 195.0
 margin_right = 211.0
-margin_bottom = 228.0
+margin_bottom = 235.0
 pressed = true
 text = "Remove picked "
 align = 2
 
 [node name="SecretMapCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
-margin_top = 216.0
+margin_top = 224.0
 margin_right = 211.0
-margin_bottom = 256.0
+margin_bottom = 264.0
 text = "Secret Map"
 align = 2
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer"]
 margin_left = 235.0
 margin_right = 443.0
-margin_bottom = 256.0
+margin_bottom = 266.0
 alignment = 2
 
 [node name="MapName" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2"]
 unique_name_in_owner = true
-margin_top = 6.0
 margin_right = 208.0
-margin_bottom = 20.0
+margin_bottom = 14.0
 align = 1
 clip_text = true
 
 [node name="AspectRatioContainer" type="AspectRatioContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2"]
-margin_top = 24.0
+margin_top = 18.0
 margin_right = 208.0
-margin_bottom = 232.0
+margin_bottom = 226.0
 
 [node name="MinimapBackground" type="TextureRect" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2/AspectRatioContainer"]
+unique_name_in_owner = true
 margin_right = 208.0
 margin_bottom = 208.0
 rect_min_size = Vector2( 208, 208 )
 texture = ExtResource( 3 )
 expand = true
 
-[node name="Minimap" type="TextureRect" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2/AspectRatioContainer"]
-unique_name_in_owner = true
-margin_right = 208.0
-margin_bottom = 208.0
-rect_min_size = Vector2( 208, 208 )
-rect_pivot_offset = Vector2( 104, 104 )
-size_flags_horizontal = 5
-size_flags_vertical = 0
-expand = true
-
 [node name="MapStars" type="Control" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2"]
-margin_top = 236.0
+margin_top = 230.0
 margin_right = 208.0
-margin_bottom = 236.0
+margin_bottom = 246.0
+rect_min_size = Vector2( 0, 16 )
 
 [node name="MapStarsTextureProgress" type="TextureProgress" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2/MapStars"]
 unique_name_in_owner = true
@@ -532,9 +524,8 @@ visible = false
 anchor_left = 0.5
 anchor_right = 0.5
 margin_left = -40.0
-margin_top = -12.0
 margin_right = 40.0
-margin_bottom = 4.0
+margin_bottom = 16.0
 max_value = 5.0
 value = 2.0
 rounded = true
@@ -546,9 +537,9 @@ script = ExtResource( 7 )
 
 [node name="Description" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2"]
 unique_name_in_owner = true
-margin_top = 240.0
+margin_top = 250.0
 margin_right = 208.0
-margin_bottom = 256.0
+margin_bottom = 266.0
 rect_min_size = Vector2( 0, 16 )
 align = 1
 valign = 2
@@ -556,15 +547,15 @@ clip_text = true
 
 [node name="HSeparator" type="HSeparator" parent="UI/PanelMapPicker/MapPicker"]
 modulate = Color( 1, 1, 1, 0.501961 )
-margin_top = 290.0
+margin_top = 298.0
 margin_right = 456.0
-margin_bottom = 294.0
+margin_bottom = 302.0
 
 [node name="GridContainer2" type="GridContainer" parent="UI/PanelMapPicker/MapPicker"]
 margin_left = 16.0
-margin_top = 304.0
+margin_top = 311.0
 margin_right = 440.0
-margin_bottom = 402.0
+margin_bottom = 404.0
 size_flags_horizontal = 4
 size_flags_vertical = 3
 custom_constants/vseparation = 12
@@ -675,9 +666,9 @@ text = "Clear pick history"
 [node name="PickedMapPathLabel" type="Label" parent="UI/PanelMapPicker/MapPicker"]
 unique_name_in_owner = true
 margin_left = 22.0
-margin_top = 412.0
+margin_top = 413.0
 margin_right = 434.0
-margin_bottom = 426.0
+margin_bottom = 427.0
 rect_min_size = Vector2( 412, 0 )
 size_flags_horizontal = 4
 custom_colors/font_color = Color( 0.501961, 0.501961, 0.501961, 1 )
@@ -689,6 +680,19 @@ margin_top = 436.0
 margin_right = 456.0
 margin_bottom = 456.0
 text = "Pick Next Map"
+
+[node name="Minimap" type="TextureRect" parent="UI/PanelMapPicker"]
+unique_name_in_owner = true
+margin_left = 253.0
+margin_top = 53.0
+margin_right = 461.0
+margin_bottom = 261.0
+rect_min_size = Vector2( 208, 208 )
+rect_pivot_offset = Vector2( 104, 104 )
+size_flags_horizontal = 5
+size_flags_vertical = 0
+expand = true
+script = ExtResource( 6 )
 
 [connection signal="pressed" from="UI/PanelConfigure/VBoxContainer/FilesGridContainer/MapsDirectorySelectButton" to="." method="_on_select_maps_directory_button_pressed"]
 [connection signal="pressed" from="UI/PanelConfigure/VBoxContainer/FilesGridContainer/ChangeSecretFilePathButton" to="." method="_on_select_secret_file_path_button_pressed"]
