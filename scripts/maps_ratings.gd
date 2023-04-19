@@ -20,7 +20,7 @@ var _maps_ratings:Dictionary = {}
 
 func set_map_rating(map_name:String, rating:int):
 	if rating == DEFAULT_RATING:
-# warning-ignore:return_value_discarded
+		@warning_ignore("return_value_discarded")
 		self._maps_ratings.erase(map_name)
 	else:
 		self._maps_ratings[map_name] = rating
@@ -35,21 +35,22 @@ func get_map_rating(map_name:String) -> int:
 
 
 func load_maps_ratings():
-	var file = File.new()
-	if file.open(RATINGS_FILE_PATH, File.READ) == OK:
-		var res = JSON.parse(file.get_as_text())
-		if res.result is Dictionary:
-			self._maps_ratings = res.result
+	var file = FileAccess.open(RATINGS_FILE_PATH, FileAccess.READ)
+	if file:
+		var test_json_conv = JSON.new()
+		test_json_conv.parse(file.get_as_text())
+		var res = test_json_conv.get_data()
+		if res is Dictionary:
+			self._maps_ratings = res
 	file.close()
 
 
 func save_maps_ratings():
-	var file = File.new()
-	if file.file_exists(RATINGS_FILE_PATH):
-		var dir = Directory.new()
-		dir.remove(RATINGS_FILE_PATH)
-	if file.open(RATINGS_FILE_PATH, File.WRITE) == OK:
-		var ratings_json_string = JSON.print(self._maps_ratings, "\t", true)
+	if FileAccess.file_exists(RATINGS_FILE_PATH):
+		DirAccess.remove_absolute(RATINGS_FILE_PATH)
+	var file = FileAccess.open(RATINGS_FILE_PATH, FileAccess.WRITE)
+	if file:
+		var ratings_json_string = JSON.stringify(self._maps_ratings, "\t", true)
 		file.store_string(ratings_json_string)
 	else:
 		printerr("Failed to create or open maps ratings file.")

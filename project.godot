@@ -6,47 +6,14 @@
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
 
-config_version=4
-
-_global_script_classes=[ {
-"base": "TextureProgress",
-"class": "InterractibleHProgress",
-"language": "GDScript",
-"path": "res://scripts/interractible_texture_progress.gd"
-}, {
-"base": "Node",
-"class": "Main",
-"language": "GDScript",
-"path": "res://scripts/main.gd"
-}, {
-"base": "Node",
-"class": "MapsRatings",
-"language": "GDScript",
-"path": "res://scripts/maps_ratings.gd"
-}, {
-"base": "Node",
-"class": "PUD",
-"language": "GDScript",
-"path": "res://scripts/pud.gd"
-}, {
-"base": "Node",
-"class": "RMP_Config",
-"language": "GDScript",
-"path": "res://scripts/random_map_picker_configuration.gd"
-} ]
-_global_script_class_icons={
-"InterractibleHProgress": "",
-"Main": "",
-"MapsRatings": "",
-"PUD": "",
-"RMP_Config": ""
-}
+config_version=5
 
 [application]
 
 config/name="Warcraft II Map Picker"
 config/description="A simple tool for Warcraft II that allows you to randomly pick a map to play within your game's maps folder."
 run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.0")
 run/low_processor_mode=true
 config/icon="res://images/RandMapPickerIcon.png"
 
@@ -56,8 +23,8 @@ driver=""
 
 [display]
 
-window/size/width=480
-window/size/height=480
+window/size/viewport_width=480
+window/size/viewport_height=480
 window/size/resizable=false
 window/energy_saving/keep_screen_on=false
 
@@ -75,7 +42,6 @@ common/enable_pause_aware_picking=true
 
 [rendering]
 
+environment/defaults/default_environment="res://default_env.tres"
 quality/driver/driver_name="GLES2"
 vram_compression/import_etc=true
-vram_compression/import_etc2=false
-environment/default_environment="res://default_env.tres"

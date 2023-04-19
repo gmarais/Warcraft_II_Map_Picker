@@ -18,14 +18,14 @@ const LIGHT_TEXT_REGIONS_OFF = Rect2(0,0,16,16)
 const LIGHT_TEXT_REGIONS_ON = Rect2(16,0,16,16)
 
 enum WATER_OR_LAND {
-	BOTH = 0
-	WATER = 1
+	BOTH = 0,
+	WATER = 1,
 	LAND = 2
 }
 
 enum CRAMPED_OR_OPEN {
-	BOTH = 0
-	CRAMPED = 1
+	BOTH = 0,
+	CRAMPED = 1,
 	OPEN = 2
 }
 
@@ -45,7 +45,7 @@ var filter_players_min:int = 2
 var filter_players_max:int = 8
 var filter_water_and_land:int = WATER_OR_LAND.BOTH
 var filter_cramped_and_open:int = CRAMPED_OR_OPEN.BOTH
-var filter_allow_daemon_watcher:bool = false
+var filter_daemon_watcher:bool = false
 var filter_allow_custom_units:bool = false
 var filter_allow_computers:bool = false
 var filter_allow_rescues:bool = false
@@ -53,7 +53,7 @@ var filter_allow_restrictions:bool = false
 var filter_min_rating = 0
 var filter_remove_picked_from_pool:bool = true
 var filter_secret_map:bool = false
-var maps_dir:Directory = Directory.new()
+var maps_dir:DirAccess
 var unsorted_maps = Array()
 var filtered_maps_pool = Array()
 var picked_maps_history = Array()
@@ -88,7 +88,7 @@ func _physics_process(_delta):
 
 
 func _exit_tree():
-	if self.loading_thread.is_active():
+	if self.loading_thread.is_alive():
 		self.loading_thread.wait_to_finish()
 
 
@@ -135,7 +135,9 @@ func passes_custom_filter(map:PUD) -> bool:
 		return false
 	if !self.filter_allow_restrictions and map.has_alow_section:
 		return false
-	if !self.filter_allow_daemon_watcher and map.red_player_is_daemon:
+	if !self.filter_daemon_watcher and map.red_player_is_daemon:
+		return false
+	if self.filter_daemon_watcher and !map.red_player_is_daemon:
 		return false
 	return true
 
@@ -205,10 +207,12 @@ func open_map_picker():
 		return
 	self.unsorted_maps.clear()
 	self.loading_pud_done = 0
-	if self.maps_dir.open(self.configuration.root_maps_directory_path) == OK and self.maps_dir.list_dir_begin(true, true) == OK:
+	self.maps_dir = DirAccess.open(self.configuration.root_maps_directory_path)
+	self.maps_dir.include_navigational = false
+	if self.maps_dir and self.maps_dir.list_dir_begin()  == OK:
 		scan_directory(self.maps_dir)
 		$"%LoadingPanelTextureProgress".max_value = self.unsorted_maps.size()
-		var err = loading_thread.start(self, "load_puds_thread")
+		var err = loading_thread.start(Callable(self,"load_puds_thread"))
 		if err != OK:
 			printerr("Error starting the loading thread.")
 			open_configuration_panel()
@@ -240,6 +244,13 @@ func is_ignored_directory(directory:String):
 	return false
 
 
+func find_map_in_unsorted_maps(map_name:String) -> PUD:
+	for p in self.unsorted_maps:
+		if p.pud_filename.to_lower().contains(map_name) == true:
+			return p
+	return null
+
+
 func unsorted_maps_contains(map_filename:String) -> bool:
 	for p in self.unsorted_maps:
 		if map_filename == p.pud_filename:
@@ -247,12 +258,12 @@ func unsorted_maps_contains(map_filename:String) -> bool:
 	return false
 
 
-func scan_directory(dir:Directory):
+func scan_directory(dir:DirAccess):
 	var entry:String = dir.get_next()
 	while entry != "":
 		if dir.current_is_dir() and is_ignored_directory(entry) == false:
-			var sub_dir = Directory.new()
-			if sub_dir.open(dir.get_current_dir() + "/" + entry) == OK and sub_dir.list_dir_begin(true, true) == OK:
+			var sub_dir = DirAccess.open(dir.get_current_dir() + "/" + entry)
+			if sub_dir and sub_dir.list_dir_begin() == OK:
 				scan_directory(sub_dir)
 			else:
 				printerr("Unable to open: " + dir.get_current_dir() + "/" + entry)
@@ -262,21 +273,62 @@ func scan_directory(dir:Directory):
 			new_pud.pud_file_path = dir.get_current_dir() + "/" + entry
 			unsorted_maps.append(new_pud)
 		entry = dir.get_next()
+	dir.list_dir_end()
 
+
+func deep_search_for_map(dir:DirAccess, map_name:String):
+	var entry:String = dir.get_next()
+	var map_pud = null
+	while entry != "":
+		if dir.current_is_dir():
+			var sub_dir = DirAccess.open(dir.get_current_dir() + "/" + entry)
+			if sub_dir and sub_dir.list_dir_begin() == OK:
+				map_pud = deep_search_for_map(sub_dir, map_name)
+				if map_pud:
+					dir.list_dir_end()
+					return map_pud
+			else:
+				printerr("Unable to open: " + dir.get_current_dir() + "/" + entry)
+		elif entry.ends_with(".pud") and entry.to_lower().contains(map_name) and (dir.get_current_dir() + "/" + entry) != self.configuration.secret_file_path:
+			map_pud = PUD.new()
+			map_pud.pud_filename = entry
+			map_pud.pud_file_path = dir.get_current_dir() + "/" + entry
+			map_pud.load_pud()
+			dir.list_dir_end()
+			return map_pud
+		entry = dir.get_next()
+	dir.list_dir_end()
+	return map_pud
+
+
+func search_ignored_directories_for_map(dir:DirAccess, map_name:String):
+	var dirs = dir.get_directories()
+	var map_pud = null
+	for dirname in dirs:
+		var sub_dir = DirAccess.open(dir.get_current_dir() + "/" + dirname)
+		if sub_dir and sub_dir.list_dir_begin() == OK:
+			if is_ignored_directory(dirname):
+				map_pud = deep_search_for_map(sub_dir, map_name)
+			else:
+				map_pud = search_ignored_directories_for_map(sub_dir, map_name)
+			if map_pud:
+				return map_pud
+	return map_pud
 
 func add_ignored_directory_checkbox(ignored_directory):
 	var new_checkbox = CheckBox.new()
 	new_checkbox.text = ignored_directory
-	new_checkbox.pressed = true
-	new_checkbox.connect("pressed", self, "_on_ignored_directory_checkbox_pressed", [new_checkbox], CONNECT_ONESHOT)
+	new_checkbox.button_pressed = true
+	new_checkbox.connect("pressed",Callable(self,"_on_ignored_directory_checkbox_pressed").bind(new_checkbox),CONNECT_ONE_SHOT)
 	$"%IgnoredDirectoriesFlowContainer".add_child(new_checkbox)
 
 
 func reset_map_display():
+	$"%Minimap".reset_transform_instant()
 	$"%Minimap".texture = null
 	$"%MapName".text = ""
 	$"%Description".text = ""
-	$"%PickedMapPathLabel".text = "No maps left, try different filters."
+	$"%PickedMapPathLabel".text = "No map found, try different filters."
 	$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%ComputersLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%RescuesLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
@@ -299,12 +351,12 @@ func turn_on_lights_for_pud(picked_map:PUD):
 
 
 func tween_animate_minimap():
-	$"%Minimap".rect_scale = Vector2(0.6, 0.6)
+	$"%Minimap".scale = Vector2(0.6, 0.6)
 	var tween := create_tween()
 # warning-ignore:return_value_discarded
-	tween.tween_property($"%Minimap", "rect_scale", Vector2(1.025, 1.025), 0.05)
+	tween.tween_property($"%Minimap", "scale", Vector2(1.025, 1.025), 0.05)
 # warning-ignore:return_value_discarded
-	tween.tween_property($"%Minimap", "rect_scale", Vector2(1.0, 1.0), 0.1)
+	tween.tween_property($"%Minimap", "scale", Vector2(1.0, 1.0), 0.1)
 
 
 func trim_maps_dir_from_path(path:String) -> String:
@@ -315,28 +367,16 @@ func trim_maps_dir_from_path(path:String) -> String:
 		return path
 
 
-func _on_pick_map_button_pressed():
-	reset_map_display()
-	tween_animate_minimap()
-	if self.currently_picked_map and self.filter_remove_picked_from_pool:
-		if !self.picked_maps_history.has(self.currently_picked_map):
-			self.picked_maps_history.append(self.currently_picked_map)
-		if self.filtered_maps_pool.has(self.currently_picked_map):
-			self.filtered_maps_pool.remove(self.filtered_maps_pool.find(self.currently_picked_map))
-	if filtered_maps_pool.empty():
-		$"%MapStarsTextureProgress".hide()
-		self.currently_picked_map = null
-		return
-	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
-	self.currently_picked_map = random_map
-	turn_on_lights_for_pud(random_map)
+func select_map(seleted_map):
+	self.currently_picked_map = seleted_map
+	turn_on_lights_for_pud(seleted_map)
 	if self.filter_secret_map == false:
-		$"%Minimap".texture = random_map.create_minimap()
-		$"%MapName".text = random_map.pud_filename
+		$"%Minimap".texture = seleted_map.create_minimap()
+		$"%MapName".text = seleted_map.pud_filename
 		$"%MapStarsTextureProgress".show()
-		$"%MapStarsTextureProgress".value = self.maps_ratings.get_map_rating(random_map.pud_filename)
-		$"%Description".text = random_map.description
-		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(random_map.pud_file_path)
+		$"%MapStarsTextureProgress".value = self.maps_ratings.get_map_rating(seleted_map.pud_filename)
+		$"%Description".text = seleted_map.description
+		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(seleted_map.pud_file_path)
 	else:
 		$"%MapStarsTextureProgress".hide()
 		$"%MapName".text = self.configuration.secret_file_path.get_file()
@@ -348,7 +388,7 @@ func _on_pick_map_button_pressed():
 		var secret_pud = PUD.new()
 		secret_pud.pud_filename = self.configuration.secret_file_path.get_file()
 		secret_pud.pud_file_path = self.configuration.secret_file_path
-		var err = self.maps_dir.copy(random_map.pud_file_path, secret_pud.pud_file_path)
+		var err = self.maps_dir.copy(seleted_map.pud_file_path, secret_pud.pud_file_path)
 		if err != OK:
 			printerr("Error while copying secret map file.")
 			return
@@ -356,17 +396,32 @@ func _on_pick_map_button_pressed():
 			printerr("Error when trying to store description.")
 		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(secret_pud.pud_file_path)
 
+func _on_pick_map_button_pressed():
+	$"%PickNextMapButton".release_focus()
+	reset_map_display()
+	tween_animate_minimap()
+	if self.currently_picked_map and self.filter_remove_picked_from_pool:
+		if !self.picked_maps_history.has(self.currently_picked_map):
+			self.picked_maps_history.append(self.currently_picked_map)
+		if self.filtered_maps_pool.has(self.currently_picked_map):
+			self.filtered_maps_pool.erase(self.currently_picked_map)
+	if filtered_maps_pool.is_empty():
+		$"%MapStarsTextureProgress".hide()
+		self.currently_picked_map = null
+		return
+	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
+	select_map(random_map)
 
 func _on_save_configuration_button_up():
 	self.save_configuration()
 
 
 func _on_select_secret_file_path_button_pressed():
-	$"%FileExplorerDialog".mode = FileDialog.MODE_SAVE_FILE
+	$"%FileExplorerDialog".file_mode = FileDialog.FILE_MODE_SAVE_FILE
 	$"%FileExplorerDialog".filters = ["*.pud"]
-	if !$"%FileExplorerDialog".is_connected("file_selected", self, "_on_file_explorer_secret_file_selected"):
+	if !$"%FileExplorerDialog".is_connected("file_selected",Callable(self,"_on_file_explorer_secret_file_selected")):
 # warning-ignore:return_value_discarded
-		$"%FileExplorerDialog".connect("file_selected", self, "_on_file_explorer_secret_file_selected", [], CONNECT_ONESHOT)
+		$"%FileExplorerDialog".connect("file_selected",Callable(self,"_on_file_explorer_secret_file_selected").bind(),CONNECT_ONE_SHOT)
 	$"%FileExplorerDialog".show()
 
 
@@ -376,10 +431,10 @@ func _on_file_explorer_secret_file_selected(filepath):
 
 
 func _on_select_maps_directory_button_pressed():
-	$"%FileExplorerDialog".mode = FileDialog.MODE_OPEN_DIR
-	if !$"%FileExplorerDialog".is_connected("dir_selected", self, "_on_file_explorer_maps_dir_selected"):
+	$"%FileExplorerDialog".file_mode = FileDialog.FILE_MODE_OPEN_DIR
+	if !$"%FileExplorerDialog".is_connected("dir_selected",Callable(self,"_on_file_explorer_maps_dir_selected")):
 # warning-ignore:return_value_discarded
-		$"%FileExplorerDialog".connect("dir_selected", self, "_on_file_explorer_maps_dir_selected", [], CONNECT_ONESHOT)
+		$"%FileExplorerDialog".connect("dir_selected",Callable(self,"_on_file_explorer_maps_dir_selected").bind(),CONNECT_ONE_SHOT)
 	$"%FileExplorerDialog".show()
 
 
@@ -404,7 +459,7 @@ func _on_ignore_directory_entered(directory_to_ignore):
 	if directory_to_ignore == "" or self.configuration.ignored_directory_names.has(directory_to_ignore):
 		printerr("Empty directory name or directory is already ignored.")
 		return
-	var poolstringarray_tmp:PoolStringArray = self.configuration.ignored_directory_names
+	var poolstringarray_tmp:PackedStringArray = self.configuration.ignored_directory_names
 	poolstringarray_tmp.append(directory_to_ignore)
 	self.configuration.ignored_directory_names = poolstringarray_tmp
 	add_ignored_directory_checkbox(directory_to_ignore)
@@ -419,8 +474,8 @@ func _on_ignored_directory_checkbox_pressed(pressed_checkbox:CheckBox):
 	var directory_to_remove = pressed_checkbox.text
 	pressed_checkbox.queue_free()
 	if self.configuration.ignored_directory_names.has(directory_to_remove):
-		var tmp_pool_string_array = PoolStringArray(self.configuration.ignored_directory_names)
-		tmp_pool_string_array.remove(tmp_pool_string_array.find(directory_to_remove))
+		var tmp_pool_string_array = PackedStringArray(self.configuration.ignored_directory_names)
+		tmp_pool_string_array.erase(directory_to_remove)
 		self.configuration.ignored_directory_names = tmp_pool_string_array
 
 
@@ -449,13 +504,12 @@ func _on_allow_rescues_check_button_toggled(button_pressed):
 
 
 func _on_allow_daemon_watcher_check_button_toggled(button_pressed):
-	self.filter_allow_daemon_watcher = button_pressed
+	self.filter_daemon_watcher = button_pressed
 	apply_filters()
 
 
 func _on_remove_picked_check_button_toggled(button_pressed):
 	self.filter_remove_picked_from_pool = button_pressed
-	apply_filters()
 
 
 func _on_min_players_spin_box_value_changed(value):
@@ -498,3 +552,23 @@ func _on_secret_map_check_button_toggled(button_pressed):
 
 func _on_map_stars_pressed(value):
 	self.maps_ratings.set_map_rating($"%MapName".text, value)
+
+
+func _on_map_name_text_submitted(new_text:String):
+	$"%MapName".release_focus()
+	reset_map_display()
+	tween_animate_minimap()
+	if self.currently_picked_map and self.filter_remove_picked_from_pool:
+		if !self.picked_maps_history.has(self.currently_picked_map):
+			self.picked_maps_history.append(self.currently_picked_map)
+		if self.filtered_maps_pool.has(self.currently_picked_map):
+			self.filtered_maps_pool.erase(self.currently_picked_map)
+	if new_text == "":
+		return
+	var map_name = new_text.get_basename().to_lower()
+	var map_pud = find_map_in_unsorted_maps(map_name)
+	if !map_pud:
+		map_pud = search_ignored_directories_for_map(self.maps_dir, map_name)
+	if map_pud:
+		select_map(map_pud)
+	

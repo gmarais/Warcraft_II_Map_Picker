@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ct7n61kre52qd"
-path="res://.godot/imported/loading.png-34199b1b16a0d03d4db06bfe27e146bb.ctex"
+uid="uid://bm45ohjffw0mj"
+path="res://.godot/imported/rockytext001.png-d4a40140fe6cb3eec32cbc2a70bf882a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://images/loading.png"
-dest_files=["res://.godot/imported/loading.png-34199b1b16a0d03d4db06bfe27e146bb.ctex"]
+source_file="res://images/rockytext001.png"
+dest_files=["res://.godot/imported/rockytext001.png-d4a40140fe6cb3eec32cbc2a70bf882a.ctex"]
 
 [params]
 

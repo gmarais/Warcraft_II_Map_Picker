@@ -12,7 +12,7 @@
 class_name PUD
 extends Node
 
-const NORMAL_TYPE_BUFFER = PoolByteArray([87,65,82,50,32,77,65,80,0,0,10,255,231,147,151,177])
+var NORMAL_TYPE_BUFFER = PackedByteArray([87,65,82,50,32,77,65,80,0,0,10,255,231,147,151,177])
 
 const PLAYER_COLOR = [
 	Color("a40000"),
@@ -51,7 +51,7 @@ enum PUD_SYMBOLS {
 enum PUD_OWNERSHIP {
 	COMPUTER = 0x01,
 	NOBODY = 0x03,
-	COMPUTER = 0x04,
+	COMPUTER2 = 0x04,
 	HUMAN = 0x05,
 	RESCUE_PASSIVE = 0x06,
 	RESCUE_ACTIVE = 0x07,
@@ -103,15 +103,15 @@ var blocking_tiles_count:int
 var era:int = 0
 var terrain_tiles_map:Array = Array()
 var starting_position_colors:Dictionary = Dictionary()
-var gold_mines:PoolVector2Array = PoolVector2Array()
-var oil_patches:PoolVector2Array = PoolVector2Array()
-var critters:PoolVector2Array = PoolVector2Array()
+var gold_mines:PackedVector2Array = PackedVector2Array()
+var oil_patches:PackedVector2Array = PackedVector2Array()
+var critters:PackedVector2Array = PackedVector2Array()
 
 
 func store_description(new_description:String) -> bool:
-	var buffer = new_description.to_ascii()
-	var file = File.new()
-	if file.open(self.pud_file_path, File.READ_WRITE) != OK:
+	var buffer = new_description.to_ascii_buffer()
+	var file = FileAccess.open(self.pud_file_path, FileAccess.READ_WRITE)
+	if !file:
 		return false
 	var section_info:SectionInfo = get_next_section_info(file)
 	while section_info != null:
@@ -133,36 +133,29 @@ func store_description(new_description:String) -> bool:
 
 
 func create_minimap():
-	var image:Image = Image.new()
-# warning-ignore:integer_division
+	var image:Image
+	@warning_ignore("integer_division")
 	var player_start_size = self.map_size / 32
+	@warning_ignore("integer_division")
 	var player_start_offset = player_start_size / 2
-	image.create(map_size, map_size, false, Image.FORMAT_RGB8)
-	image.fill(Color.green)
-	image.lock()
+	image = Image.create(map_size, map_size, false, Image.FORMAT_RGB8)
+	image.fill(Color.GREEN)
 	for x in range(self.map_size):
 		for y in range(self.map_size):
 			var index = x + y * self.map_size
 			var position = Vector2(x, y)
 			if self.critters.has(position):
-				image.set_pixel(x, y, Color.gray)
+				image.set_pixel(x, y, Color.GRAY)
 			elif self.gold_mines.has(position):
-				image.unlock()
-				image.fill_rect(Rect2(x, y, 3, 3), Color.gold)
-				image.lock()
+				image.fill_rect(Rect2(x, y, 3, 3), Color.GOLD)
 			elif self.oil_patches.has(position):
-				image.unlock()
-				image.fill_rect(Rect2(x, y, 2, 2), Color.black)
-				image.lock()
+				image.fill_rect(Rect2(x, y, 2, 2), Color.BLACK)
 			elif self.starting_position_colors.keys().has(position):
-				image.unlock()
 				image.fill_rect(Rect2(x - player_start_offset, y - player_start_offset, player_start_size,  player_start_size), self.starting_position_colors[position])
-				image.lock()
-			elif image.get_pixel(x, y) == Color.green:
+			elif image.get_pixel(x, y) == Color.GREEN:
 				image.set_pixel(x, y, self.terrain_tiles_map[index][self.era])
-	image.unlock()
-	var image_texture = ImageTexture.new()
-	image_texture.create_from_image(image, ImageTexture.STORAGE_RAW)
+	var image_texture:ImageTexture
+	image_texture = ImageTexture.create_from_image(image)
 	return image_texture
 
 
@@ -173,8 +166,8 @@ func load_pud_file(map_filename:String, path:String) -> bool:
 
 
 func load_pud() -> bool:
-	var file = File.new()
-	if file.open(self.pud_file_path, File.READ) != OK:
+	var file = FileAccess.open(self.pud_file_path, FileAccess.READ)
+	if !file:
 		return false
 	var section_info:SectionInfo = get_next_section_info(file)
 	while section_info != null:
@@ -210,10 +203,10 @@ func load_pud() -> bool:
 	return true
 
 
-func get_next_section_info(file:File) -> SectionInfo:
-	if file.get_len() - file.get_position() <= 8:
+func get_next_section_info(file:FileAccess) -> SectionInfo:
+	if file.get_length() - file.get_position() <= 8:
 		return null
-	var bytes_buffer:PoolByteArray
+	var bytes_buffer:PackedByteArray
 	bytes_buffer = file.get_buffer(4)
 	var section_info = SectionInfo.new()
 	section_info.name = bytes_buffer.get_string_from_ascii()
@@ -222,25 +215,25 @@ func get_next_section_info(file:File) -> SectionInfo:
 	return section_info
 
 
-func is_wc2_type(file:File) -> bool:
-	var byte_buffer:PoolByteArray = file.get_buffer(8)
+func is_wc2_type(file:FileAccess) -> bool:
+	var byte_buffer:PackedByteArray = file.get_buffer(8)
 	var pud_type_string = byte_buffer.get_string_from_ascii()
 	if pud_type_string == "WAR2 MAP":
 		return true
 	return false
 
 
-func parse_dimentions(file:File):
+func parse_dimentions(file:FileAccess):
 	self.map_size = file.get_8()
 
 
-func parse_description(file:File):
-	var byte_buffer:PoolByteArray = file.get_buffer(32)
+func parse_description(file:FileAccess):
+	var byte_buffer:PackedByteArray = file.get_buffer(32)
 	self.description = byte_buffer.get_string_from_ascii()
 
 
-func parse_units(file:File, section_info:SectionInfo):
-# warning-ignore:integer_division
+func parse_units(file:FileAccess, section_info:SectionInfo):
+	@warning_ignore("integer_division")
 	var number_of_units_placed = section_info.length / 8
 	var daemon_counter = 0
 	var has_non_daemon_units = false
@@ -266,23 +259,23 @@ func parse_units(file:File, section_info:SectionInfo):
 		self.red_player_is_daemon = true
 
 
-func parse_ownerships(file:File):
+func parse_ownerships(file:FileAccess):
 	for _p in range(15):
 		var ownership_value = file.get_8()
 		if ownership_value == PUD_OWNERSHIP.HUMAN:
 			self.human_players += 1
 		elif ownership_value == PUD_OWNERSHIP.RESCUE_PASSIVE or ownership_value == PUD_OWNERSHIP.RESCUE_ACTIVE:
 			self.rescue_players += 1
-		elif ownership_value == PUD_OWNERSHIP.COMPUTER:
+		elif ownership_value == PUD_OWNERSHIP.COMPUTER or ownership_value == PUD_OWNERSHIP.COMPUTER2:
 			self.computer_players += 1
 
 
-func parse_units_data(file:File):
+func parse_units_data(file:FileAccess):
 	var is_using_default = file.get_8()
 	self.uses_default_unit_data = is_using_default != 0
 
 
-func parse_upgrades_data(file:File):
+func parse_upgrades_data(file:FileAccess):
 	var is_using_default = file.get_8()
 	self.uses_default_upgrade_data = is_using_default != 0
 
@@ -293,17 +286,17 @@ func parse_era(file):
 		self.era = value
 
 
-func parse_tiles_map(file:File, section_info:SectionInfo):
+func parse_tiles_map(file:FileAccess, section_info:SectionInfo):
 	self.blocking_tiles_count = 0
 	self.water_tiles_count = 0
-# warning-ignore:integer_division
+	@warning_ignore("integer_division")
 	var tiles_number = section_info.length / 2
 	self.terrain_tiles_map.clear()
 	for _t in range(tiles_number):
 		var tile_type:int = file.get_8()
 		var transition:int = file.get_8()
 		if transition == 0x00:
-# warning-ignore:integer_division
+			@warning_ignore("integer_division")
 			tile_type = tile_type / 16
 			match tile_type:
 				0x1:

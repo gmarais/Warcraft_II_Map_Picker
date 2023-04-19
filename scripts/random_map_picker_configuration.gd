@@ -19,8 +19,8 @@ const MAP_DIRECTORY_DEFAULT_PATH = "Maps directory not selected."
 var _config_file = ConfigFile.new()
 
 var secret_file_path:String = SECRET_MAP_DEFAULT_FILENAME
-var root_maps_directory_path:String = MAP_DIRECTORY_DEFAULT_PATH setget set_root_maps_directory_path
-var ignored_directory_names:PoolStringArray = PoolStringArray() setget set_ignored_directory_names
+var root_maps_directory_path:String = MAP_DIRECTORY_DEFAULT_PATH : set = set_root_maps_directory_path
+var ignored_directory_names:PackedStringArray = PackedStringArray() : set = set_ignored_directory_names
 var water_land_treshold:float = 0.5
 var cramped_open_treshold:float = 0.5
 var default_maps_rating = 2
