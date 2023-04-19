@@ -19,10 +19,9 @@ var _maps_ratings:Dictionary = {}
 
 
 func set_map_rating(map_name:String, rating:int):
-	if rating == DEFAULT_RATING:
-		@warning_ignore("return_value_discarded")
+	if rating == DEFAULT_RATING and self._maps_ratings.has(map_name):
 		self._maps_ratings.erase(map_name)
-	else:
+	elif map_name != "":
 		self._maps_ratings[map_name] = rating
 	self.save_maps_ratings()
 
@@ -42,7 +41,7 @@ func load_maps_ratings():
 		var res = test_json_conv.get_data()
 		if res is Dictionary:
 			self._maps_ratings = res
-	file.close()
+		file.close()
 
 
 func save_maps_ratings():
