@@ -80,6 +80,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(192, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+horizontal_alignment = 2
 clip_text = true
 
 [node name="ChangeSecretFilePathButton" type="Button" parent="UI/PanelConfigure/VBoxContainer/FilesGridContainer"]
@@ -93,6 +94,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(192, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+horizontal_alignment = 2
 clip_text = true
 
 [node name="HSeparator2" type="HSeparator" parent="UI/PanelConfigure/VBoxContainer"]
@@ -225,7 +227,12 @@ tint_progress = Color(0.25098, 1, 0.501961, 1)
 [node name="LoadingStepLabel" type="Label" parent="UI/PanelLoading/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_colors/font_color = Color(0.643137, 0.643137, 0.643137, 1)
 horizontal_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
+text_direction = 2
+structured_text_bidi_override = 2
 
 [node name="PanelMapPicker" type="Panel" parent="UI"]
 layout_mode = 0
@@ -241,6 +248,7 @@ offset_left = 12.0
 offset_top = 12.0
 offset_right = -12.0
 offset_bottom = -12.0
+theme_override_constants/separation = 0
 
 [node name="MapPickerTitle" type="Label" parent="UI/PanelMapPicker/MapPicker"]
 layout_mode = 2
@@ -256,7 +264,9 @@ columns = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer"]
 layout_mode = 2
+size_flags_vertical = 4
 theme = ExtResource("2_hmy7x")
+theme_override_constants/separation = 4
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
 layout_mode = 2
@@ -358,6 +368,7 @@ layout_mode = 2
 [node name="MinMapStarsTextureProgress" type="TextureProgressBar" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6/CenterContainer"]
 layout_mode = 2
 max_value = 5.0
+value = 2.0
 rounded = true
 texture_under = ExtResource("5")
 texture_progress = ExtResource("5")
@@ -366,6 +377,7 @@ script = ExtResource("7")
 
 [node name="RemovePickedCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
 layout_mode = 2
+button_pressed = true
 text = "Remove picked "
 alignment = 2
 
@@ -421,10 +433,10 @@ script = ExtResource("7")
 
 [node name="Description" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2"]
 unique_name_in_owner = true
-modulate = Color(0.643137, 0.643137, 0.643137, 1)
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 theme = ExtResource("2_hmy7x")
+theme_override_colors/font_color = Color(0.643137, 0.643137, 0.643137, 1)
 horizontal_alignment = 1
 clip_text = true
 text_overrun_behavior = 1
@@ -521,7 +533,12 @@ custom_minimum_size = Vector2(412, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("2_hmy7x")
+theme_override_colors/font_color = Color(0.643137, 0.643137, 0.643137, 1)
+horizontal_alignment = 1
 clip_text = true
+text_overrun_behavior = 3
+text_direction = 2
+structured_text_bidi_override = 2
 
 [node name="PickNextMapButton" type="Button" parent="UI/PanelMapPicker/MapPicker"]
 unique_name_in_owner = true

@@ -50,7 +50,7 @@ var filter_allow_custom_units:bool = false
 var filter_allow_computers:bool = false
 var filter_allow_rescues:bool = false
 var filter_allow_restrictions:bool = false
-var filter_min_rating = 0
+var filter_min_rating = 2
 var filter_remove_picked_from_pool:bool = true
 var filter_secret_map:bool = false
 var maps_dir:DirAccess
