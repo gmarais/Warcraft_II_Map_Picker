@@ -548,7 +548,6 @@ text = "Pick Next Map"
 
 [node name="Minimap" type="TextureRect" parent="UI/PanelMapPicker"]
 unique_name_in_owner = true
-texture_filter = 1
 custom_minimum_size = Vector2(208, 208)
 layout_mode = 0
 offset_left = 236.0

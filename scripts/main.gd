@@ -209,7 +209,7 @@ func open_map_picker():
 	self.loading_pud_done = 0
 	self.maps_dir = DirAccess.open(self.configuration.root_maps_directory_path)
 	self.maps_dir.include_navigational = false
-	if self.maps_dir and self.maps_dir.list_dir_begin()  == OK:
+	if self.maps_dir:
 		scan_directory(self.maps_dir)
 		$"%LoadingPanelTextureProgress".max_value = self.unsorted_maps.size()
 		var err = loading_thread.start(Callable(self,"load_puds_thread"))
@@ -259,11 +259,13 @@ func unsorted_maps_contains(map_filename:String) -> bool:
 
 
 func scan_directory(dir:DirAccess):
+	if dir.list_dir_begin() != OK:
+		return
 	var entry:String = dir.get_next()
 	while entry != "":
 		if dir.current_is_dir() and is_ignored_directory(entry) == false:
 			var sub_dir = DirAccess.open(dir.get_current_dir() + "/" + entry)
-			if sub_dir and sub_dir.list_dir_begin() == OK:
+			if sub_dir:
 				scan_directory(sub_dir)
 			else:
 				printerr("Unable to open: " + dir.get_current_dir() + "/" + entry)
@@ -277,16 +279,15 @@ func scan_directory(dir:DirAccess):
 
 
 func deep_search_for_map(dir:DirAccess, map_name:String):
-	var entry:String = dir.get_next()
 	var map_pud = null
-	while entry != "":
+	if dir.list_dir_begin() != OK:
+		return map_pud
+	var entry:String = dir.get_next()
+	while !map_pud and entry != "":
 		if dir.current_is_dir():
 			var sub_dir = DirAccess.open(dir.get_current_dir() + "/" + entry)
-			if sub_dir and sub_dir.list_dir_begin() == OK:
+			if sub_dir:
 				map_pud = deep_search_for_map(sub_dir, map_name)
-				if map_pud:
-					dir.list_dir_end()
-					return map_pud
 			else:
 				printerr("Unable to open: " + dir.get_current_dir() + "/" + entry)
 		elif entry.ends_with(".pud") and entry.to_lower().contains(map_name) and (dir.get_current_dir() + "/" + entry) != self.configuration.secret_file_path:
@@ -294,8 +295,6 @@ func deep_search_for_map(dir:DirAccess, map_name:String):
 			map_pud.pud_filename = entry
 			map_pud.pud_file_path = dir.get_current_dir() + "/" + entry
 			map_pud.load_pud()
-			dir.list_dir_end()
-			return map_pud
 		entry = dir.get_next()
 	dir.list_dir_end()
 	return map_pud
@@ -306,7 +305,7 @@ func search_ignored_directories_for_map(dir:DirAccess, map_name:String):
 	var map_pud = null
 	for dirname in dirs:
 		var sub_dir = DirAccess.open(dir.get_current_dir() + "/" + dirname)
-		if sub_dir and sub_dir.list_dir_begin() == OK:
+		if sub_dir:
 			if is_ignored_directory(dirname):
 				map_pud = deep_search_for_map(sub_dir, map_name)
 			else:
@@ -335,6 +334,7 @@ func reset_map_display():
 	$"%RestrictionsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%CustomUnitsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+	$"%MapStarsTextureProgress".hide()
 
 
 func turn_on_lights_for_pud(picked_map:PUD):
@@ -353,9 +353,7 @@ func turn_on_lights_for_pud(picked_map:PUD):
 func tween_animate_minimap():
 	$"%Minimap".scale = Vector2(0.6, 0.6)
 	var tween := create_tween()
-# warning-ignore:return_value_discarded
 	tween.tween_property($"%Minimap", "scale", Vector2(1.025, 1.025), 0.05)
-# warning-ignore:return_value_discarded
 	tween.tween_property($"%Minimap", "scale", Vector2(1.0, 1.0), 0.1)
 
 
@@ -372,18 +370,19 @@ func select_map(seleted_map):
 	turn_on_lights_for_pud(seleted_map)
 	if self.filter_secret_map == false:
 		$"%Minimap".texture = seleted_map.create_minimap()
+		$"%Minimap".texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		$"%MapName".text = seleted_map.pud_filename
 		$"%MapStarsTextureProgress".show()
 		$"%MapStarsTextureProgress".value = self.maps_ratings.get_map_rating(seleted_map.pud_filename)
 		$"%Description".text = seleted_map.description
 		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(seleted_map.pud_file_path)
 	else:
-		$"%MapStarsTextureProgress".hide()
 		$"%MapName".text = self.configuration.secret_file_path.get_file()
 		if self.configuration.secret_file_path == self.configuration.SECRET_MAP_DEFAULT_FILENAME:
 			printerr("Error secret file path not configured.")
 			return
 		$"%Minimap".texture = load("res://images/secret_minimap_background.png")
+		$"%Minimap".texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 		$"%Description".text = SECRET_MAP_DESCRIPTION
 		var secret_pud = PUD.new()
 		secret_pud.pud_filename = self.configuration.secret_file_path.get_file()
@@ -406,7 +405,6 @@ func _on_pick_map_button_pressed():
 		if self.filtered_maps_pool.has(self.currently_picked_map):
 			self.filtered_maps_pool.erase(self.currently_picked_map)
 	if filtered_maps_pool.is_empty():
-		$"%MapStarsTextureProgress".hide()
 		self.currently_picked_map = null
 		return
 	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
@@ -420,7 +418,6 @@ func _on_select_secret_file_path_button_pressed():
 	$"%FileExplorerDialog".file_mode = FileDialog.FILE_MODE_SAVE_FILE
 	$"%FileExplorerDialog".filters = ["*.pud"]
 	if !$"%FileExplorerDialog".is_connected("file_selected",Callable(self,"_on_file_explorer_secret_file_selected")):
-# warning-ignore:return_value_discarded
 		$"%FileExplorerDialog".connect("file_selected",Callable(self,"_on_file_explorer_secret_file_selected").bind(),CONNECT_ONE_SHOT)
 	$"%FileExplorerDialog".show()
 
@@ -433,7 +430,6 @@ func _on_file_explorer_secret_file_selected(filepath):
 func _on_select_maps_directory_button_pressed():
 	$"%FileExplorerDialog".file_mode = FileDialog.FILE_MODE_OPEN_DIR
 	if !$"%FileExplorerDialog".is_connected("dir_selected",Callable(self,"_on_file_explorer_maps_dir_selected")):
-# warning-ignore:return_value_discarded
 		$"%FileExplorerDialog".connect("dir_selected",Callable(self,"_on_file_explorer_maps_dir_selected").bind(),CONNECT_ONE_SHOT)
 	$"%FileExplorerDialog".show()
 
