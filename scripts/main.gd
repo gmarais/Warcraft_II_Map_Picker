@@ -70,6 +70,7 @@ func _ready():
 	self.loading_thread = Thread.new()
 	set_physics_process(false)
 	initialize_option_buttons()
+	self.load_picked_maps_history()
 	self.maps_ratings.load_maps_ratings()
 	self.load_configuration()
 
@@ -143,7 +144,7 @@ func passes_custom_filter(map:PUD) -> bool:
 
 
 func passes_maps_history_filter(map:PUD) -> bool:
-	if self.picked_maps_history.has(map):
+	if self.picked_maps_history.has(map.pud_filename):
 		return false
 	return true
 
@@ -164,6 +165,12 @@ func apply_filters():
 		and self.passes_custom_filter(m) \
 		and self.passes_maps_rating_filter(m):
 			filtered_maps_pool.append(m)
+
+
+func load_picked_maps_history():
+	if FileAccess.file_exists(configuration.CONFIG_FILE_PATH.get_base_dir() + "picked_maps_history.txt"):
+		var maps_history_file_content = FileAccess.get_file_as_string(configuration.CONFIG_FILE_PATH.get_base_dir() + "picked_maps_history.txt")
+		self.picked_maps_history = JSON.parse_string(maps_history_file_content)
 
 
 func load_configuration():
@@ -365,6 +372,18 @@ func trim_maps_dir_from_path(path:String) -> String:
 		return path
 
 
+func save_picked_maps_history():
+	var f = FileAccess.open(configuration.CONFIG_FILE_PATH.get_base_dir() + "picked_maps_history.txt", FileAccess.WRITE_READ)
+	f.store_string(JSON.stringify(self.picked_maps_history))
+	f.close()
+
+
+func save_picked_map_name_file(pud:PUD):
+	var f = FileAccess.open(configuration.CONFIG_FILE_PATH.get_base_dir() + "last_picked_map.txt", FileAccess.WRITE_READ)
+	f.store_line(pud.pud_filename)
+	f.close()
+
+
 func select_map(seleted_map):
 	self.currently_picked_map = seleted_map
 	turn_on_lights_for_pud(seleted_map)
@@ -376,6 +395,7 @@ func select_map(seleted_map):
 		$"%MapStarsTextureProgress".value = self.maps_ratings.get_map_rating(seleted_map.pud_filename)
 		$"%Description".text = seleted_map.description
 		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(seleted_map.pud_file_path)
+		save_picked_map_name_file(seleted_map)
 	else:
 		$"%MapName".text = self.configuration.secret_file_path.get_file()
 		if self.configuration.secret_file_path == self.configuration.SECRET_MAP_DEFAULT_FILENAME:
@@ -394,14 +414,16 @@ func select_map(seleted_map):
 		if secret_pud.store_description(SECRET_MAP_DESCRIPTION) == false:
 			printerr("Error when trying to store description.")
 		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(secret_pud.pud_file_path)
+		save_picked_map_name_file(secret_pud)
 
 func _on_pick_map_button_pressed():
 	$"%PickNextMapButton".release_focus()
 	reset_map_display()
 	tween_animate_minimap()
 	if self.currently_picked_map and self.filter_remove_picked_from_pool:
-		if !self.picked_maps_history.has(self.currently_picked_map):
-			self.picked_maps_history.append(self.currently_picked_map)
+		if !self.picked_maps_history.has(self.currently_picked_map.pud_filename):
+			self.picked_maps_history.append(self.currently_picked_map.pud_filename)
+			save_picked_maps_history()
 		if self.filtered_maps_pool.has(self.currently_picked_map):
 			self.filtered_maps_pool.erase(self.currently_picked_map)
 	if filtered_maps_pool.is_empty():
@@ -524,6 +546,7 @@ func _on_max_players_spin_box_value_changed(value):
 
 func _on_clear_pick_history_button_pressed():
 	self.picked_maps_history.clear()
+	save_picked_maps_history()
 	apply_filters()
 
 
@@ -555,8 +578,9 @@ func _on_map_name_text_submitted(new_text:String):
 	reset_map_display()
 	tween_animate_minimap()
 	if self.currently_picked_map and self.filter_remove_picked_from_pool:
-		if !self.picked_maps_history.has(self.currently_picked_map):
-			self.picked_maps_history.append(self.currently_picked_map)
+		if !self.picked_maps_history.has(self.currently_picked_map.pud_filename):
+			self.picked_maps_history.append(self.currently_picked_map.pud_filename)
+			save_picked_maps_history()
 		if self.filtered_maps_pool.has(self.currently_picked_map):
 			self.filtered_maps_pool.erase(self.currently_picked_map)
 	if new_text == "":
