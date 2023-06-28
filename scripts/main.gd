@@ -13,6 +13,7 @@ class_name Main
 extends Node
 
 
+const PICKED_MAPS_HISTORY_FILE = "picked_maps_history.json"
 const SECRET_MAP_DESCRIPTION = "A random mysterious map."
 const LIGHT_TEXT_REGIONS_OFF = Rect2(0,0,16,16)
 const LIGHT_TEXT_REGIONS_ON = Rect2(16,0,16,16)
@@ -168,8 +169,8 @@ func apply_filters():
 
 
 func load_picked_maps_history():
-	if FileAccess.file_exists(configuration.CONFIG_FILE_PATH.get_base_dir() + "picked_maps_history.txt"):
-		var maps_history_file_content = FileAccess.get_file_as_string(configuration.CONFIG_FILE_PATH.get_base_dir() + "picked_maps_history.txt")
+	if FileAccess.file_exists(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_HISTORY_FILE):
+		var maps_history_file_content = FileAccess.get_file_as_string(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_HISTORY_FILE)
 		self.picked_maps_history = JSON.parse_string(maps_history_file_content)
 
 
@@ -373,8 +374,8 @@ func trim_maps_dir_from_path(path:String) -> String:
 
 
 func save_picked_maps_history():
-	var f = FileAccess.open(configuration.CONFIG_FILE_PATH.get_base_dir() + "picked_maps_history.txt", FileAccess.WRITE_READ)
-	f.store_string(JSON.stringify(self.picked_maps_history))
+	var f = FileAccess.open(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_HISTORY_FILE, FileAccess.WRITE_READ)
+	f.store_string(JSON.stringify(self.picked_maps_history, "\t"))
 	f.close()
 
 
