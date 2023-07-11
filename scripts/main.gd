@@ -418,7 +418,7 @@ func select_map(seleted_map):
 		save_picked_map_name_file(secret_pud)
 
 func _on_pick_map_button_pressed():
-	$"%PickNextMapButton".release_focus()
+	$"%PickMapButton".release_focus()
 	reset_map_display()
 	tween_animate_minimap()
 	if self.currently_picked_map and self.filter_remove_picked_from_pool:
@@ -427,6 +427,16 @@ func _on_pick_map_button_pressed():
 			save_picked_maps_history()
 		if self.filtered_maps_pool.has(self.currently_picked_map):
 			self.filtered_maps_pool.erase(self.currently_picked_map)
+	if filtered_maps_pool.is_empty():
+		self.currently_picked_map = null
+		return
+	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
+	select_map(random_map)
+
+func _on_skip_map_button_pressed():
+	$"%SkipMapButton".release_focus()
+	reset_map_display()
+	tween_animate_minimap()
 	if filtered_maps_pool.is_empty():
 		self.currently_picked_map = null
 		return
