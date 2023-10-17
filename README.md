@@ -21,6 +21,10 @@ When requesting a secret map with hidden informations:
 
 ![Secret map picked view](./images/previews/map_picker_panel_preview_3.png)
 
+When reviewing and managing picked maps:
+
+![Maps picked view](./images/previews/map_picker_panel_preview_4.png)
+
 *For any question regarding Warcraft II or this program head to the Trog's [Discord](https://discord.com/invite/ADt3TgFuV7)*
 
 Have a great day!

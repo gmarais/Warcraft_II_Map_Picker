@@ -13,7 +13,7 @@ class_name Main
 extends Node
 
 
-const PICKED_MAPS_HISTORY_FILE = "picked_maps_history.json"
+const PICKED_MAPS_FILE = "picked_maps.json"
 const SECRET_MAP_DESCRIPTION = "A random mysterious map."
 const LIGHT_TEXT_REGIONS_OFF = Rect2(0,0,16,16)
 const LIGHT_TEXT_REGIONS_ON = Rect2(16,0,16,16)
@@ -51,18 +51,21 @@ var filter_allow_custom_units:bool = false
 var filter_allow_computers:bool = false
 var filter_allow_rescues:bool = false
 var filter_allow_restrictions:bool = false
+var filter_allow_picked:bool = false
 var filter_min_rating = 2
-var filter_remove_picked_from_pool:bool = true
 var filter_secret_map:bool = false
 var maps_dir:DirAccess
 var unsorted_maps = Array()
 var filtered_maps_pool = Array()
-var picked_maps_history = Array()
+var picked_maps = Array()
+var picked_maps_changed:bool = true
 var loading_pud_done:int
 var loading_pud_filename:String = ""
 var loading_mutex:Mutex
 var loading_thread:Thread
 var currently_picked_map:PUD = null
+var clear_picked_maps_button_down_time:int
+var clear_picked_maps_tween:Tween
 
 
 func _ready():
@@ -71,7 +74,7 @@ func _ready():
 	self.loading_thread = Thread.new()
 	set_physics_process(false)
 	initialize_option_buttons()
-	self.load_picked_maps_history()
+	self.load_picked_maps()
 	self.maps_ratings.load_maps_ratings()
 	self.load_configuration()
 
@@ -92,6 +95,7 @@ func _physics_process(_delta):
 func _exit_tree():
 	if self.loading_thread.is_alive():
 		self.loading_thread.wait_to_finish()
+	save_picked_maps()
 
 
 func initialize_option_buttons():
@@ -144,8 +148,8 @@ func passes_custom_filter(map:PUD) -> bool:
 	return true
 
 
-func passes_maps_history_filter(map:PUD) -> bool:
-	if self.picked_maps_history.has(map.pud_filename):
+func passes_picked_maps_filter(map:PUD) -> bool:
+	if !self.filter_allow_picked and self.picked_maps.has(map.pud_filename):
 		return false
 	return true
 
@@ -162,16 +166,17 @@ func apply_filters():
 		if self.passes_water_or_land_filter(m) \
 		and self.passes_cramped_or_open_filter(m)\
 		and self.passes_players_number_filter(m) \
-		and self.passes_maps_history_filter(m) \
+		and self.passes_picked_maps_filter(m) \
 		and self.passes_custom_filter(m) \
 		and self.passes_maps_rating_filter(m):
 			filtered_maps_pool.append(m)
 
 
-func load_picked_maps_history():
-	if FileAccess.file_exists(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_HISTORY_FILE):
-		var maps_history_file_content = FileAccess.get_file_as_string(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_HISTORY_FILE)
-		self.picked_maps_history = JSON.parse_string(maps_history_file_content)
+func load_picked_maps():
+	if FileAccess.file_exists(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_FILE):
+		var picked_maps_file_content = FileAccess.get_file_as_string(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_FILE)
+		self.picked_maps = JSON.parse_string(picked_maps_file_content)
+		self.picked_maps_changed = true
 
 
 func load_configuration():
@@ -191,6 +196,7 @@ func save_configuration():
 
 func open_configuration_panel():
 	$UI/PanelLoading.hide()
+	$UI/PanelPickedMaps.hide()
 	$UI/PanelMapPicker.hide()
 	$UI/PanelConfigure.show()
 	$"%WaterLandThresholdSlider".value = self.configuration.water_land_treshold
@@ -206,6 +212,7 @@ func open_configuration_panel():
 
 func open_map_picker():
 	$UI/PanelConfigure.hide()
+	$UI/PanelPickedMaps.hide()
 	$UI/PanelMapPicker.hide()
 	$UI/PanelLoading.show()
 	if !self.configuration.directories_config_changed:
@@ -229,6 +236,23 @@ func open_map_picker():
 	else:
 		printerr("Could not open the Maps directory.")
 		open_configuration_panel()
+
+
+func open_picked_maps():
+	$UI/PanelConfigure.hide()
+	$UI/PanelPickedMaps.hide()
+	$UI/PanelMapPicker.hide()
+	$UI/PanelLoading.hide()
+	$UI/PanelPickedMaps.show()
+	if self.picked_maps_changed:
+		$"%PickedMapsItemList".clear()
+		for filename in picked_maps:
+			var pud:PUD = self.find_map_in_unsorted_maps(String(filename).to_lower())
+			if !pud:
+				printerr("Pcked map not found: ", filename)
+			else:
+				$"%PickedMapsItemList".add_item(filename, pud.create_minimap())
+		self.picked_maps_changed = false
 
 
 func load_puds_thread():
@@ -322,6 +346,7 @@ func search_ignored_directories_for_map(dir:DirAccess, map_name:String):
 				return map_pud
 	return map_pud
 
+
 func add_ignored_directory_checkbox(ignored_directory):
 	var new_checkbox = CheckBox.new()
 	new_checkbox.text = ignored_directory
@@ -336,26 +361,40 @@ func reset_map_display():
 	$"%MapName".text = ""
 	$"%Description".text = ""
 	$"%PickedMapPathLabel".text = "No map found, try different filters."
+	$"%PickedLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%ComputersLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%RescuesLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%RestrictionsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%CustomUnitsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
-	$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	$"%MapStarsTextureProgress".hide()
 
 
 func turn_on_lights_for_pud(picked_map:PUD):
 	if !picked_map.uses_default_unit_data or !picked_map.uses_default_upgrade_data:
 		$"%CustomUnitsLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	else: 
+		$"%CustomUnitsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	if picked_map.red_player_is_daemon:
 		$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	else:
+		$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	if picked_map.has_alow_section:
 		$"%RestrictionsLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	else:
+		$"%RestrictionsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	if picked_map.computer_players > 0:
 		$"%ComputersLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	else:
+		$"%ComputersLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	if picked_map.rescue_players > 0:
 		$"%RescuesLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	else:
+		$"%RescuesLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+	if self.picked_maps.has(picked_map.pud_filename):
+		$"%PickedLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+	else:
+		$"%PickedLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 
 
 func tween_animate_minimap():
@@ -373,9 +412,9 @@ func trim_maps_dir_from_path(path:String) -> String:
 		return path
 
 
-func save_picked_maps_history():
-	var f = FileAccess.open(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_HISTORY_FILE, FileAccess.WRITE_READ)
-	f.store_string(JSON.stringify(self.picked_maps_history, "\t"))
+func save_picked_maps():
+	var f = FileAccess.open(configuration.CONFIG_FILE_PATH.get_base_dir() + PICKED_MAPS_FILE, FileAccess.WRITE_READ)
+	f.store_string(JSON.stringify(self.picked_maps, "\t"))
 	f.close()
 
 
@@ -385,18 +424,18 @@ func save_picked_map_name_file(pud:PUD):
 	f.close()
 
 
-func select_map(seleted_map):
-	self.currently_picked_map = seleted_map
-	turn_on_lights_for_pud(seleted_map)
+func select_map(selected_map):
+	self.currently_picked_map = selected_map
+	turn_on_lights_for_pud(selected_map)
 	if self.filter_secret_map == false:
-		$"%Minimap".texture = seleted_map.create_minimap()
+		$"%Minimap".texture = selected_map.create_minimap()
 		$"%Minimap".texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		$"%MapName".text = seleted_map.pud_filename
+		$"%MapName".text = selected_map.pud_filename
 		$"%MapStarsTextureProgress".show()
-		$"%MapStarsTextureProgress".value = self.maps_ratings.get_map_rating(seleted_map.pud_filename)
-		$"%Description".text = seleted_map.description
-		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(seleted_map.pud_file_path)
-		save_picked_map_name_file(seleted_map)
+		$"%MapStarsTextureProgress".value = self.maps_ratings.get_map_rating(selected_map.pud_filename)
+		$"%Description".text = selected_map.description
+		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(selected_map.pud_file_path)
+		save_picked_map_name_file(selected_map)
 	else:
 		$"%MapName".text = self.configuration.secret_file_path.get_file()
 		if self.configuration.secret_file_path == self.configuration.SECRET_MAP_DEFAULT_FILENAME:
@@ -408,7 +447,7 @@ func select_map(seleted_map):
 		var secret_pud = PUD.new()
 		secret_pud.pud_filename = self.configuration.secret_file_path.get_file()
 		secret_pud.pud_file_path = self.configuration.secret_file_path
-		var err = self.maps_dir.copy(seleted_map.pud_file_path, secret_pud.pud_file_path)
+		var err = self.maps_dir.copy(selected_map.pud_file_path, secret_pud.pud_file_path)
 		if err != OK:
 			printerr("Error while copying secret map file.")
 			return
@@ -417,31 +456,32 @@ func select_map(seleted_map):
 		$"%PickedMapPathLabel".text = trim_maps_dir_from_path(secret_pud.pud_file_path)
 		save_picked_map_name_file(secret_pud)
 
+
 func _on_pick_map_button_pressed():
 	$"%PickMapButton".release_focus()
+	if self.currently_picked_map:
+		self.picked_maps_changed = true
+		if !self.picked_maps.has(self.currently_picked_map.pud_filename):
+			self.picked_maps.append(self.currently_picked_map.pud_filename)
+			$"%PickedLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
+			if !self.filter_allow_picked and self.filtered_maps_pool.has(self.currently_picked_map):
+				self.filtered_maps_pool.erase(self.currently_picked_map)
+		else:
+			self.picked_maps.erase(self.currently_picked_map.pud_filename)
+			$"%PickedLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+			apply_filters()
+
+
+func _on_randomize_button_pressed():
+	$"%RandomizeButton".release_focus()
 	reset_map_display()
 	tween_animate_minimap()
-	if self.currently_picked_map and self.filter_remove_picked_from_pool:
-		if !self.picked_maps_history.has(self.currently_picked_map.pud_filename):
-			self.picked_maps_history.append(self.currently_picked_map.pud_filename)
-			save_picked_maps_history()
-		if self.filtered_maps_pool.has(self.currently_picked_map):
-			self.filtered_maps_pool.erase(self.currently_picked_map)
 	if filtered_maps_pool.is_empty():
 		self.currently_picked_map = null
 		return
 	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
 	select_map(random_map)
 
-func _on_skip_map_button_pressed():
-	$"%SkipMapButton".release_focus()
-	reset_map_display()
-	tween_animate_minimap()
-	if filtered_maps_pool.is_empty():
-		self.currently_picked_map = null
-		return
-	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
-	select_map(random_map)
 
 func _on_save_configuration_button_up():
 	self.save_configuration()
@@ -537,8 +577,9 @@ func _on_allow_daemon_watcher_check_button_toggled(button_pressed):
 	apply_filters()
 
 
-func _on_remove_picked_check_button_toggled(button_pressed):
-	self.filter_remove_picked_from_pool = button_pressed
+func _on_allow_picked_check_button_toggled(button_pressed):
+	self.filter_allow_picked = button_pressed
+	apply_filters()
 
 
 func _on_min_players_spin_box_value_changed(value):
@@ -552,12 +593,6 @@ func _on_max_players_spin_box_value_changed(value):
 	self.filter_players_max = value
 	if value < self.filter_players_min:
 		$"%MinPlayersSpinBox".value = value
-	apply_filters()
-
-
-func _on_clear_pick_history_button_pressed():
-	self.picked_maps_history.clear()
-	save_picked_maps_history()
 	apply_filters()
 
 
@@ -588,12 +623,6 @@ func _on_map_name_text_submitted(new_text:String):
 	$"%MapName".release_focus()
 	reset_map_display()
 	tween_animate_minimap()
-	if self.currently_picked_map and self.filter_remove_picked_from_pool:
-		if !self.picked_maps_history.has(self.currently_picked_map.pud_filename):
-			self.picked_maps_history.append(self.currently_picked_map.pud_filename)
-			save_picked_maps_history()
-		if self.filtered_maps_pool.has(self.currently_picked_map):
-			self.filtered_maps_pool.erase(self.currently_picked_map)
 	if new_text == "":
 		return
 	var map_name = new_text.get_basename().to_lower()
@@ -602,4 +631,53 @@ func _on_map_name_text_submitted(new_text:String):
 		map_pud = search_ignored_directories_for_map(self.maps_dir, map_name)
 	if map_pud:
 		select_map(map_pud)
-	
+
+
+func _on_map_picker_button_pressed():
+	$UI/PanelConfigure.hide()
+	$UI/PanelPickedMaps.hide()
+	$UI/PanelMapPicker.hide()
+	$UI/PanelLoading.hide()
+	$UI/PanelMapPicker.show()
+	apply_filters()
+
+
+func _on_picked_maps_button_pressed():
+	open_picked_maps()
+
+
+func _on_clear_picked_maps_button_button_down():
+	self.clear_picked_maps_button_down_time = Time.get_ticks_msec()
+	self.clear_picked_maps_tween = create_tween()
+	self.clear_picked_maps_tween.tween_property($"%ClearPickedMapsTextureProgressBar", "value", 1000, 1.0)
+
+
+func _on_clear_picked_maps_button_button_up():
+	if self.clear_picked_maps_tween and self.clear_picked_maps_tween.is_running():
+		self.clear_picked_maps_tween.kill()
+	$"%ClearPickedMapsTextureProgressBar".value = 0
+	var curr_time = Time.get_ticks_msec()
+	if curr_time - self.clear_picked_maps_button_down_time > 1000:
+		self.picked_maps.clear()
+		self.picked_maps_changed = true
+		apply_filters()
+		if self.currently_picked_map:
+			turn_on_lights_for_pud(self.currently_picked_map)
+		open_picked_maps()
+
+
+func _on_picked_maps_item_list_gui_input(event):
+	var item_list:ItemList = $"%PickedMapsItemList"
+	if item_list.has_focus():
+		if event is InputEventKey:
+			if event.pressed and event.keycode == KEY_DELETE:
+				var selected_items:PackedInt32Array = item_list.get_selected_items()
+				for item in selected_items:
+					var filename:String = item_list.get_item_text(item)
+					if self.picked_maps.has(filename):
+						self.picked_maps.erase(filename)
+						if self.currently_picked_map and self.currently_picked_map.pud_filename == filename:
+							$"%PickedLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
+				apply_filters()
+				self.picked_maps_changed = true
+				open_picked_maps()

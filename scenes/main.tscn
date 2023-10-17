@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://qa2lv0rlisa3"]
+[gd_scene load_steps=16 format=3 uid="uid://qa2lv0rlisa3"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://ct7n61kre52qd" path="res://images/loading.png" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://cjo50ey8ek8o6" path="res://images/stars.png" id="5"]
 [ext_resource type="Script" path="res://scripts/minimap.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/interractible_texture_progress.gd" id="7"]
+[ext_resource type="Texture2D" uid="uid://lgldp0g7pbqv" path="res://images/loading20px.png" id="9_k5opx"]
 
 [sub_resource type="AtlasTexture" id="1"]
 atlas = ExtResource("4")
@@ -26,6 +27,10 @@ atlas = ExtResource("4")
 region = Rect2(0, 0, 16, 16)
 
 [sub_resource type="AtlasTexture" id="5"]
+atlas = ExtResource("4")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2hnho"]
 atlas = ExtResource("4")
 region = Rect2(0, 0, 16, 16)
 
@@ -178,9 +183,10 @@ text = "Save configuration"
 unique_name_in_owner = true
 mode = 2
 title = "Open a Directory"
-initial_position = 1
 size = Vector2i(640, 640)
+unresizable = true
 borderless = true
+always_on_top = true
 min_size = Vector2i(199, 70)
 content_scale_aspect = 1
 content_scale_factor = 0.75
@@ -233,6 +239,76 @@ clip_text = true
 text_overrun_behavior = 3
 text_direction = 2
 structured_text_bidi_override = 2
+
+[node name="PanelPickedMaps" type="Panel" parent="UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_hmy7x")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/PanelPickedMaps"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="PickedMapsTitle" type="Label" parent="UI/PanelPickedMaps/VBoxContainer"]
+layout_mode = 2
+text = "Picked maps"
+horizontal_alignment = 1
+
+[node name="PickedMapsItemList" type="ItemList" parent="UI/PanelPickedMaps/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(448, 400)
+layout_mode = 2
+select_mode = 1
+max_columns = 6
+same_column_width = true
+fixed_column_width = 84
+icon_mode = 0
+fixed_icon_size = Vector2i(80, 80)
+
+[node name="GridContainer2" type="GridContainer" parent="UI/PanelPickedMaps/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+theme = ExtResource("2_hmy7x")
+theme_override_constants/h_separation = 12
+columns = 2
+
+[node name="MapPickerButton" type="Button" parent="UI/PanelPickedMaps/VBoxContainer/GridContainer2"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme = ExtResource("2_hmy7x")
+text = "Map Picker"
+
+[node name="ClearPickedMapsButton" type="Button" parent="UI/PanelPickedMaps/VBoxContainer/GridContainer2"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme = ExtResource("2_hmy7x")
+text = "Clear all"
+icon_alignment = 2
+
+[node name="ClearPickedMapsTextureProgressBar" type="TextureProgressBar" parent="UI/PanelPickedMaps/VBoxContainer/GridContainer2/ClearPickedMapsButton"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 23.0
+offset_bottom = 23.0
+max_value = 1000.0
+fill_mode = 4
+texture_progress = ExtResource("9_k5opx")
 
 [node name="PanelMapPicker" type="Panel" parent="UI"]
 layout_mode = 0
@@ -348,24 +424,40 @@ size_flags_vertical = 4
 texture = SubResource("5")
 stretch_mode = 6
 
+[node name="HBoxContainer6" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="AllowPickedCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6"]
+layout_mode = 2
+text = "Picked"
+
+[node name="PickedLight" type="TextureRect" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+size_flags_vertical = 4
+texture = SubResource("AtlasTexture_2hnho")
+stretch_mode = 6
+
 [node name="HSeparator" type="HSeparator" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
 modulate = Color(1, 1, 1, 0.501961)
 layout_mode = 2
 
-[node name="HBoxContainer6" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
+[node name="HBoxContainer7" type="HBoxContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 2
 
-[node name="MinStarsLabel" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6"]
+[node name="MinStarsLabel" type="Label" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer7"]
 layout_mode = 2
 size_flags_stretch_ratio = 0.0
 text = "Min rating"
 
-[node name="CenterContainer" type="CenterContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6"]
+[node name="CenterContainer" type="CenterContainer" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer7"]
 layout_mode = 2
 
-[node name="MinMapStarsTextureProgress" type="TextureProgressBar" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6/CenterContainer"]
+[node name="MinMapStarsTextureProgress" type="TextureProgressBar" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer7/CenterContainer"]
 layout_mode = 2
 max_value = 5.0
 value = 2.0
@@ -374,12 +466,6 @@ texture_under = ExtResource("5")
 texture_progress = ExtResource("5")
 tint_under = Color(0.313726, 0.313726, 0.313726, 1)
 script = ExtResource("7")
-
-[node name="RemovePickedCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
-layout_mode = 2
-button_pressed = true
-text = "Remove picked "
-alignment = 2
 
 [node name="SecretMapCheckButton" type="CheckButton" parent="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer"]
 layout_mode = 2
@@ -521,11 +607,11 @@ layout_mode = 2
 theme = ExtResource("2_hmy7x")
 text = "Reconfigure"
 
-[node name="ClearPickHistoryButton" type="Button" parent="UI/PanelMapPicker/MapPicker/GridContainer2"]
+[node name="PickedMapsButton" type="Button" parent="UI/PanelMapPicker/MapPicker/GridContainer2"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 theme = ExtResource("2_hmy7x")
-text = "Clear pick history"
+text = "Picked Maps"
 
 [node name="PickedMapPathLabel" type="Label" parent="UI/PanelMapPicker/MapPicker"]
 unique_name_in_owner = true
@@ -548,12 +634,12 @@ theme = ExtResource("2_hmy7x")
 theme_override_constants/h_separation = 12
 columns = 2
 
-[node name="SkipMapButton" type="Button" parent="UI/PanelMapPicker/MapPicker/GridContainer3"]
+[node name="RandomizeButton" type="Button" parent="UI/PanelMapPicker/MapPicker/GridContainer3"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 theme = ExtResource("2_hmy7x")
-text = "Skip"
+text = "Randomize"
 
 [node name="PickMapButton" type="Button" parent="UI/PanelMapPicker/MapPicker/GridContainer3"]
 unique_name_in_owner = true
@@ -583,13 +669,17 @@ script = ExtResource("6")
 [connection signal="pressed" from="UI/PanelConfigure/VBoxContainer/GridContainer2/IgnoreDirectoryButton" to="." method="_on_ignore_directory_button_pressed"]
 [connection signal="text_submitted" from="UI/PanelConfigure/VBoxContainer/GridContainer2/DirectoryToIgnoreLineEdit" to="." method="_on_ignore_directory_entered"]
 [connection signal="button_up" from="UI/PanelConfigure/VBoxContainer/SaveConfigurationButton" to="." method="_on_save_configuration_button_up"]
+[connection signal="gui_input" from="UI/PanelPickedMaps/VBoxContainer/PickedMapsItemList" to="." method="_on_picked_maps_item_list_gui_input"]
+[connection signal="pressed" from="UI/PanelPickedMaps/VBoxContainer/GridContainer2/MapPickerButton" to="." method="_on_map_picker_button_pressed"]
+[connection signal="button_down" from="UI/PanelPickedMaps/VBoxContainer/GridContainer2/ClearPickedMapsButton" to="." method="_on_clear_picked_maps_button_button_down"]
+[connection signal="button_up" from="UI/PanelPickedMaps/VBoxContainer/GridContainer2/ClearPickedMapsButton" to="." method="_on_clear_picked_maps_button_button_up"]
 [connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer/AllowRestrictionsCheckButton" to="." method="_on_allow_restrictions_check_button_toggled"]
 [connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer2/AllowComputersCheckButton" to="." method="_on_allow_computer_check_button_toggled"]
 [connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer3/AllowRescuesCheckButton" to="." method="_on_allow_rescues_check_button_toggled"]
 [connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer4/CustomUnitsCheckButton" to="." method="_on_custom_units_check_button_toggled"]
 [connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer5/AllowDaemonWatcherCheckButton" to="." method="_on_allow_daemon_watcher_check_button_toggled"]
-[connection signal="progress_pressed" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6/CenterContainer/MinMapStarsTextureProgress" to="." method="_on_min_stars_pressed"]
-[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/RemovePickedCheckButton" to="." method="_on_remove_picked_check_button_toggled"]
+[connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer6/AllowPickedCheckButton" to="." method="_on_allow_picked_check_button_toggled"]
+[connection signal="progress_pressed" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/HBoxContainer7/CenterContainer/MinMapStarsTextureProgress" to="." method="_on_min_stars_pressed"]
 [connection signal="toggled" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer/SecretMapCheckButton" to="." method="_on_secret_map_check_button_toggled"]
 [connection signal="text_submitted" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2/MapName" to="." method="_on_map_name_text_submitted"]
 [connection signal="progress_pressed" from="UI/PanelMapPicker/MapPicker/GridContainer/VBoxContainer2/MapStars/MapStarsTextureProgress" to="." method="_on_map_stars_pressed"]
@@ -598,6 +688,6 @@ script = ExtResource("6")
 [connection signal="value_changed" from="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer2/MaxPlayersSpinBox" to="." method="_on_max_players_spin_box_value_changed"]
 [connection signal="item_selected" from="UI/PanelMapPicker/MapPicker/GridContainer2/HBoxContainer4/CrampedFactorOptionButton" to="." method="_on_cramped_factor_option_button_item_selected"]
 [connection signal="pressed" from="UI/PanelMapPicker/MapPicker/GridContainer2/ReconfigureButton" to="." method="_on_reconfigure_button_pressed"]
-[connection signal="pressed" from="UI/PanelMapPicker/MapPicker/GridContainer2/ClearPickHistoryButton" to="." method="_on_clear_pick_history_button_pressed"]
-[connection signal="button_up" from="UI/PanelMapPicker/MapPicker/GridContainer3/SkipMapButton" to="." method="_on_skip_map_button_pressed"]
+[connection signal="pressed" from="UI/PanelMapPicker/MapPicker/GridContainer2/PickedMapsButton" to="." method="_on_picked_maps_button_pressed"]
+[connection signal="button_up" from="UI/PanelMapPicker/MapPicker/GridContainer3/RandomizeButton" to="." method="_on_randomize_button_pressed"]
 [connection signal="button_up" from="UI/PanelMapPicker/MapPicker/GridContainer3/PickMapButton" to="." method="_on_pick_map_button_pressed"]
