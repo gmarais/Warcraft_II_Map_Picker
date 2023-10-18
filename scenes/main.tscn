@@ -186,7 +186,6 @@ title = "Open a Directory"
 size = Vector2i(640, 640)
 unresizable = true
 borderless = true
-always_on_top = true
 min_size = Vector2i(199, 70)
 content_scale_aspect = 1
 content_scale_factor = 0.75
