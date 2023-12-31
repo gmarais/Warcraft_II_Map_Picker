@@ -46,7 +46,7 @@ var filter_players_min:int = 2
 var filter_players_max:int = 8
 var filter_water_and_land:int = WATER_OR_LAND.BOTH
 var filter_cramped_and_open:int = CRAMPED_OR_OPEN.BOTH
-var filter_daemon_watcher:bool = false
+var filter_allow_daemon_watcher:bool = false
 var filter_allow_custom_units:bool = false
 var filter_allow_computers:bool = false
 var filter_allow_rescues:bool = false
@@ -83,13 +83,15 @@ func _physics_process(_delta):
 	if self.loading_thread.is_alive() == false:
 		self.loading_thread.wait_to_finish()
 		set_physics_process(false)
+		apply_filters()
 		$UI/PanelLoading.hide()
 		$UI/PanelMapPicker.show()
 		self.configuration.directories_config_changed = false
-	self.loading_mutex.lock()
-	$"%LoadingPanelTextureProgress".value = self.loading_pud_done
-	$"%LoadingStepLabel".text = self.loading_pud_filename
-	self.loading_mutex.unlock()
+	else:
+		self.loading_mutex.lock()
+		$"%LoadingPanelTextureProgress".value = self.loading_pud_done
+		$"%LoadingStepLabel".text = self.loading_pud_filename
+		self.loading_mutex.unlock()
 
 
 func _exit_tree():
@@ -141,9 +143,7 @@ func passes_custom_filter(map:PUD) -> bool:
 		return false
 	if !self.filter_allow_restrictions and map.has_alow_section:
 		return false
-	if !self.filter_daemon_watcher and map.red_player_is_daemon:
-		return false
-	if self.filter_daemon_watcher and !map.red_player_is_daemon:
+	if !self.filter_allow_daemon_watcher and map.red_player_is_daemon:
 		return false
 	return true
 
@@ -256,17 +256,15 @@ func open_picked_maps():
 
 
 func load_puds_thread():
-	print("loading thread started...")
 	for m in unsorted_maps:
+		var ret = m.load_pud()
 		self.loading_mutex.lock()
-		self.loading_pud_filename = m.pud_filename
+		if ret:
+			self.loading_pud_filename = m.pud_filename
+			self.loading_pud_done += 1
+		else:
+			printerr("could not load pud file: " + m.pud_filename)
 		self.loading_mutex.unlock()
-		m.load_pud()
-		self.loading_mutex.lock()
-		self.loading_pud_done += 1
-		self.loading_mutex.unlock()
-	apply_filters()
-	print("loading thread ended...")
 
 
 func is_ignored_directory(directory:String):
@@ -573,7 +571,7 @@ func _on_allow_rescues_check_button_toggled(button_pressed):
 
 
 func _on_allow_daemon_watcher_check_button_toggled(button_pressed):
-	self.filter_daemon_watcher = button_pressed
+	self.filter_allow_daemon_watcher = button_pressed
 	apply_filters()
 
 
