@@ -64,6 +64,8 @@ var loading_pud_filename:String = ""
 var loading_mutex:Mutex
 var loading_thread:Thread
 var currently_picked_map:PUD = null
+var search_result = Array()
+var currently_picked_map_index = 0
 var clear_picked_maps_button_down_time:int
 var clear_picked_maps_tween:Tween
 
@@ -275,10 +277,13 @@ func is_ignored_directory(directory:String):
 
 
 func find_map_in_unsorted_maps(map_name:String) -> PUD:
-	for p in self.unsorted_maps:
-		if p.pud_filename.to_lower().contains(map_name) == true:
-			return p
-	return null
+	self.search_result = self.unsorted_maps.filter(func (p): return p.pud_filename.to_lower().contains(map_name))
+	self.currently_picked_map_index = 0
+	
+	if self.search_result.is_empty():
+		return null
+	
+	return self.search_result[0]
 
 
 func unsorted_maps_contains(map_filename:String) -> bool:
@@ -478,6 +483,7 @@ func _on_randomize_button_pressed():
 		self.currently_picked_map = null
 		return
 	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
+	self.search_result = []
 	select_map(random_map)
 
 
@@ -679,3 +685,12 @@ func _on_picked_maps_item_list_gui_input(event):
 				apply_filters()
 				self.picked_maps_changed = true
 				open_picked_maps()
+
+
+func _input(event):
+	if event.is_action_pressed("ui_page_up") and search_result.size() > 0:
+		currently_picked_map_index = (currently_picked_map_index - 1) % search_result.size()
+		select_map(search_result[currently_picked_map_index])
+	elif event.is_action_pressed("ui_page_down") and search_result.size() > 0:
+		currently_picked_map_index = (currently_picked_map_index + 1) % search_result.size()
+		select_map(search_result[currently_picked_map_index])
