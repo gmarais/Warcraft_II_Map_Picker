@@ -42,6 +42,7 @@ class StructMapInfos:
 
 var configuration = RMP_Config.new()
 var maps_ratings = MapsRatings.new()
+var maps_cache = MapsCache.new()
 var filter_players_min:int = 2
 var filter_players_max:int = 8
 var filter_water_and_land:int = WATER_OR_LAND.BOTH
@@ -78,6 +79,7 @@ func _ready():
 	initialize_option_buttons()
 	self.load_picked_maps()
 	self.maps_ratings.load_maps_ratings()
+	self.maps_cache.load_cache()
 	self.load_configuration()
 
 
@@ -259,7 +261,14 @@ func open_picked_maps():
 
 func load_puds_thread():
 	for m in unsorted_maps:
-		var ret = m.load_pud()
+		var data:Dictionary = maps_cache.get_map_data(m.pud_file_path)
+		var ret = null
+		if data.has(MapsCache.MTIME_KEY):
+			ret = m.from_dict(data)
+		else:
+			ret = m.load_pud()
+			maps_cache.set_map_data(m.pud_file_path, m.to_dict())
+		
 		self.loading_mutex.lock()
 		if ret:
 			self.loading_pud_filename = m.pud_filename
@@ -267,6 +276,7 @@ func load_puds_thread():
 		else:
 			printerr("could not load pud file: " + m.pud_filename)
 		self.loading_mutex.unlock()
+	maps_cache.save_cache()
 
 
 func is_ignored_directory(directory:String):

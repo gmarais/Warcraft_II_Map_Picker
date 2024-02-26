@@ -6,6 +6,7 @@ export.cfg
 export_presets.cfg
 config.cfg
 ratings.json
+cache.json
 picked_maps.json
 last_picked_map.txt
 
@@ -16,3 +17,4 @@ data_*/
 
 # Directory ignores
 bin/
+export/
