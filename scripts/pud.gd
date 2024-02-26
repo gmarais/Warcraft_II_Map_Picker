@@ -140,6 +140,8 @@ func create_minimap():
 	var player_start_offset = player_start_size / 2
 	image = Image.create(map_size, map_size, false, Image.FORMAT_RGB8)
 	image.fill(Color.GREEN)
+	if self.terrain_tiles_map.size() == 0:
+		load_pud() # lazy load
 	for x in range(self.map_size):
 		for y in range(self.map_size):
 			var index = x + y * self.map_size
@@ -342,3 +344,80 @@ func parse_tiles_map(file:FileAccess, section_info:SectionInfo):
 			self.terrain_tiles_map.append(TERRAIN_TYPE_COLOR.DARK_WATER)
 			self.water_tiles_count += 1
 
+
+func to_dict() -> Dictionary:
+	var data:Dictionary = {}
+
+	data["pud_filename"] = self.pud_filename
+	data["pud_file_path"] = self.pud_file_path
+	data["description"] = self.description
+	data["human_players"] = self.human_players
+	data["computer_players"] = self.computer_players
+	data["rescue_players"] = self.rescue_players
+	data["map_size"] = self.map_size
+	data["uses_default_unit_data"] = self.uses_default_unit_data
+	data["uses_default_upgrade_data"] = self.uses_default_upgrade_data
+	data["has_alow_section"] = self.has_alow_section
+	data["red_player_is_daemon"] = self.red_player_is_daemon
+	data["water_factor"] = self.water_factor
+	data["cramped_factor"] = self.cramped_factor
+	data["water_tiles_count"] = self.water_tiles_count
+	data["blocking_tiles_count"] = self.blocking_tiles_count
+	data["era"] = self.era
+
+	var tmp = []
+	for k in self.starting_position_colors:
+		var v = self.starting_position_colors[k]
+		tmp.append([k.x, k.y, v.r, v.g, v.b, v.a])
+	data["starting_position_colors"] = tmp
+
+	tmp = []
+	for v in self.gold_mines:
+		tmp.append([v.x, v.y])
+	data["gold_mines"] = tmp
+
+	tmp = []
+	for v in self.oil_patches:
+		tmp.append([v.x, v.y])
+	data["oil_patches"] = tmp
+
+	tmp = []
+	for v in self.critters:
+		tmp.append([v.x, v.y])
+	data["critters"] = tmp
+	
+
+	return data
+
+
+func from_dict(data: Dictionary):
+	self.pud_filename = data["pud_filename"]
+	self.pud_file_path = data["pud_file_path"]
+	self.description = data["description"]
+	self.human_players = data["human_players"]
+	self.computer_players = data["computer_players"]
+	self.rescue_players = data["rescue_players"]
+	self.map_size = data["map_size"]
+	self.uses_default_unit_data = data["uses_default_unit_data"]
+	self.uses_default_upgrade_data = data["uses_default_upgrade_data"]
+	self.has_alow_section = data["has_alow_section"]
+	self.red_player_is_daemon = data["red_player_is_daemon"]
+	self.water_factor = data["water_factor"]
+	self.cramped_factor = data["cramped_factor"]
+	self.water_tiles_count = data["water_tiles_count"]
+	self.blocking_tiles_count = data["blocking_tiles_count"]
+	self.era = data["era"]
+
+	for v in data["starting_position_colors"]:
+		self.starting_position_colors[Vector2(v[0], v[1])] = Color(v[2], v[3], v[4], v[5])
+
+	for v in data["gold_mines"]:
+		self.gold_mines.append(Vector2(v[0], v[1]))
+
+	for v in data["oil_patches"]:
+		self.oil_patches.append(Vector2(v[0], v[1]))
+
+	for v in data["critters"]:
+		self.critters.append(Vector2(v[0], v[1]))
+	
+	return true
