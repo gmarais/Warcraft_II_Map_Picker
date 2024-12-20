@@ -698,9 +698,9 @@ func _on_picked_maps_item_list_gui_input(event):
 
 
 func _input(event):
-	if event.is_action_pressed("ui_page_up") and search_result.size() > 0:
+	if event.is_action_pressed("ui_up") and search_result.size() > 0:
 		currently_picked_map_index = (currently_picked_map_index - 1) % search_result.size()
 		select_map(search_result[currently_picked_map_index])
-	elif event.is_action_pressed("ui_page_down") and search_result.size() > 0:
+	elif event.is_action_pressed("ui_down") and search_result.size() > 0:
 		currently_picked_map_index = (currently_picked_map_index + 1) % search_result.size()
 		select_map(search_result[currently_picked_map_index])
