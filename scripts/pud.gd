@@ -385,7 +385,7 @@ func to_dict() -> Dictionary:
 	for v in self.critters:
 		tmp.append([v.x, v.y])
 	data["critters"] = tmp
-	
+
 
 	return data
 
@@ -419,5 +419,5 @@ func from_dict(data: Dictionary):
 
 	for v in data["critters"]:
 		self.critters.append(Vector2(v[0], v[1]))
-	
+
 	return true

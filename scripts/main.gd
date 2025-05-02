@@ -102,6 +102,9 @@ func _exit_tree():
 	if self.loading_thread.is_alive():
 		self.loading_thread.wait_to_finish()
 	save_picked_maps()
+	var f = FileAccess.open(configuration.CONFIG_FILE_PATH.get_base_dir() + "last_picked_map.txt", FileAccess.WRITE_READ)
+	f.store_line("")
+	f.close()
 
 
 func initialize_option_buttons():
@@ -268,7 +271,7 @@ func load_puds_thread():
 		else:
 			ret = m.load_pud()
 			maps_cache.set_map_data(m.pud_file_path, m.to_dict())
-		
+
 		self.loading_mutex.lock()
 		if ret:
 			self.loading_pud_filename = m.pud_filename
@@ -289,10 +292,10 @@ func is_ignored_directory(directory:String):
 func find_map_in_unsorted_maps(map_name:String) -> PUD:
 	self.search_result = self.unsorted_maps.filter(func (p): return p.pud_filename.to_lower().contains(map_name))
 	self.currently_picked_map_index = 0
-	
+
 	if self.search_result.is_empty():
 		return null
-	
+
 	return self.search_result[0]
 
 
@@ -386,7 +389,7 @@ func reset_map_display():
 func turn_on_lights_for_pud(picked_map:PUD):
 	if !picked_map.uses_default_unit_data or !picked_map.uses_default_upgrade_data:
 		$"%CustomUnitsLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
-	else: 
+	else:
 		$"%CustomUnitsLight".texture.set_region(LIGHT_TEXT_REGIONS_OFF)
 	if picked_map.red_player_is_daemon:
 		$"%DaemonLight".texture.set_region(LIGHT_TEXT_REGIONS_ON)
@@ -489,11 +492,11 @@ func _on_randomize_button_pressed():
 	$"%RandomizeButton".release_focus()
 	reset_map_display()
 	tween_animate_minimap()
+	self.search_result = []
 	if filtered_maps_pool.is_empty():
 		self.currently_picked_map = null
 		return
 	var random_map:PUD = filtered_maps_pool[int(randf() * filtered_maps_pool.size())]
-	self.search_result = []
 	select_map(random_map)
 
 
@@ -529,7 +532,7 @@ func _on_file_explorer_maps_dir_selected(dir):
 func _on_water_land_threshold_slider_drag_ended(value_changed):
 	if value_changed:
 		self.configuration.water_land_treshold = $"%WaterLandThresholdSlider".value
-		
+
 
 
 func _on_cramped_open_threshold_slider_drag_ended(value_changed):

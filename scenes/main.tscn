@@ -1,13 +1,13 @@
 [gd_scene load_steps=16 format=3 uid="uid://qa2lv0rlisa3"]
 
-[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Script" uid="uid://dxvcd2fqygbyu" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://ct7n61kre52qd" path="res://images/loading.png" id="2"]
 [ext_resource type="Theme" uid="uid://bx8xqil4jn2vd" path="res://themes/ui_theme.tres" id="2_hmy7x"]
 [ext_resource type="Texture2D" uid="uid://bfwpgm87m6q4g" path="res://images/minimap_background_with_icon.png" id="3"]
 [ext_resource type="Texture2D" uid="uid://cvgjglspl6mik" path="res://images/ui_leds.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://cjo50ey8ek8o6" path="res://images/stars.png" id="5"]
-[ext_resource type="Script" path="res://scripts/minimap.gd" id="6"]
-[ext_resource type="Script" path="res://scripts/interractible_texture_progress.gd" id="7"]
+[ext_resource type="Script" uid="uid://crvho3357qbaq" path="res://scripts/minimap.gd" id="6"]
+[ext_resource type="Script" uid="uid://dpkrkp05m57ih" path="res://scripts/interractible_texture_progress.gd" id="7"]
 [ext_resource type="Texture2D" uid="uid://lgldp0g7pbqv" path="res://images/loading20px.png" id="9_k5opx"]
 
 [sub_resource type="AtlasTexture" id="1"]
