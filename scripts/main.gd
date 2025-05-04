@@ -170,10 +170,10 @@ func passes_maps_rating_filter(map:PUD) -> bool:
 func apply_filters():
 	filtered_maps_pool.clear()
 	for m in unsorted_maps:
-		if self.passes_water_or_land_filter(m) \
+		if self.passes_picked_maps_filter(m) \
+		and self.passes_water_or_land_filter(m) \
 		and self.passes_cramped_or_open_filter(m)\
 		and self.passes_players_number_filter(m) \
-		and self.passes_picked_maps_filter(m) \
 		and self.passes_custom_filter(m) \
 		and self.passes_maps_rating_filter(m):
 			filtered_maps_pool.append(m)
@@ -292,10 +292,8 @@ func is_ignored_directory(directory:String):
 func find_map_in_unsorted_maps(map_name:String) -> PUD:
 	self.search_result = self.unsorted_maps.filter(func (p): return p.pud_filename.to_lower().contains(map_name))
 	self.currently_picked_map_index = 0
-
 	if self.search_result.is_empty():
 		return null
-
 	return self.search_result[0]
 
 

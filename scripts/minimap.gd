@@ -2,6 +2,7 @@ extends TextureRect
 
 
 var tween:Tween
+var minimap_is_large:bool = false
 
 func reset_transform_instant():
 	var rect = $"%MinimapBackground".get_global_rect()
@@ -9,6 +10,7 @@ func reset_transform_instant():
 	self.set_size(rect.size)
 
 func reset_transform():
+	minimap_is_large = false
 	if tween:
 		tween.kill()
 	tween = create_tween().set_parallel(true)
@@ -17,6 +19,7 @@ func reset_transform():
 	tween.tween_property($"%Minimap", "size", rect.size, 0.1)
 
 func expand_minimap():
+	minimap_is_large = true
 	if tween:
 		tween.kill()
 	tween = create_tween().set_parallel(true)
@@ -24,7 +27,7 @@ func expand_minimap():
 	tween.tween_property($"%Minimap", "size", self.get_parent().size, 0.1)
 
 func toggle_texture_size():
-	if self.get_global_rect() != $"%MinimapBackground".get_global_rect():
+	if minimap_is_large:
 		reset_transform()
 	else:
 		expand_minimap()

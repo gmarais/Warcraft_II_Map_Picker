@@ -262,6 +262,9 @@ func parse_units(file:FileAccess, section_info:SectionInfo):
 
 
 func parse_ownerships(file:FileAccess):
+	self.human_players = 0
+	self.rescue_players = 0
+	self.computer_players = 0
 	for _p in range(15):
 		var ownership_value = file.get_8()
 		if ownership_value == PUD_OWNERSHIP.HUMAN:
@@ -394,19 +397,19 @@ func from_dict(data: Dictionary):
 	self.pud_filename = data["pud_filename"]
 	self.pud_file_path = data["pud_file_path"]
 	self.description = data["description"]
-	self.human_players = data["human_players"]
-	self.computer_players = data["computer_players"]
-	self.rescue_players = data["rescue_players"]
-	self.map_size = data["map_size"]
+	self.human_players = int(data["human_players"])
+	self.computer_players = int(data["computer_players"])
+	self.rescue_players = int(data["rescue_players"])
+	self.map_size = int(data["map_size"])
 	self.uses_default_unit_data = data["uses_default_unit_data"]
 	self.uses_default_upgrade_data = data["uses_default_upgrade_data"]
 	self.has_alow_section = data["has_alow_section"]
 	self.red_player_is_daemon = data["red_player_is_daemon"]
-	self.water_factor = data["water_factor"]
-	self.cramped_factor = data["cramped_factor"]
-	self.water_tiles_count = data["water_tiles_count"]
-	self.blocking_tiles_count = data["blocking_tiles_count"]
-	self.era = data["era"]
+	self.water_factor = float(data["water_factor"])
+	self.cramped_factor = float(data["cramped_factor"])
+	self.water_tiles_count = int(data["water_tiles_count"])
+	self.blocking_tiles_count = int(data["blocking_tiles_count"])
+	self.era = int(data["era"])
 
 	for v in data["starting_position_colors"]:
 		self.starting_position_colors[Vector2(v[0], v[1])] = Color(v[2], v[3], v[4], v[5])
